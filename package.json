@@ -7,7 +7,7 @@
     "clean": "rm -rf dist/ && mkdir -p dist/js",
     "build": "./scripts/build.sh",
     "deploy": "gh-pages -d dist",
-    "serve": "live-server dist --port=3000",
+    "serve": "serve dist",
     "dev": "./scripts/dev.sh",
     "full-build": "npm run clean && npm run build && npm run serve",
     "build-standalone": "./scripts/build-standalone.sh"
@@ -21,11 +21,11 @@
     "braces": "^3.0.3",
     "chokidar": "^4.0.3",
     "gh-pages": "^6.3.0",
-    "live-server": "^1.2.2",
     "micromatch": "^4.0.8",
     "npm-run-all": "^4.1.5",
     "readdirp": "^4.1.2",
     "rollup": "^4.35.0",
-    "rollup-plugin-copy": "^3.5.0"
+    "rollup-plugin-copy": "^3.5.0",
+    "serve": "^14.2.4"
   }
 }
