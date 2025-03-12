@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "rollup -c",
-    "serve": "live-server dist",
-    "start": "npm-run-all build serve"
+    "clean": "rm -rf dist/ && mkdir -p dist/js",
+    "build": "./scripts/build.sh",
+    "serve": "live-server dist --port=3000",
+    "dev": "./scripts/dev.sh",
+    "full-build": "npm run clean && npm run build && npm run serve"
   },
   "engines": {
     "node": ">=16.0.0"

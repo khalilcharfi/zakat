@@ -1,75 +1,101 @@
 # Zakat Calculator Web Application
 
-A modern, multilingual web application for calculating Zakat based on financial data. This tool helps users determine their Zakat obligations by analyzing uploaded financial data and comparing it against the Nisab threshold.
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+A modern web application for calculating Zakat obligations based on Islamic financial principles.
 
 ## Features
 
-- **Multilingual Support**: Available in English, Arabic, and French.
-- **File Upload**: Users can upload JSON files containing financial data.
-- **Zakat Calculation**: Automatically calculates Zakat based on the uploaded data.
-- **Nisab Reference**: Displays Nisab values for different years.
-- **Hijri Date Conversion**: Converts Gregorian dates to Hijri dates.
-- **Responsive Design**: Works seamlessly on desktop and mobile devices.
-- **Accessibility**: Built with ARIA roles and semantic HTML for screen reader compatibility.
+- 📊 **Zakat Calculation** - Automatically calculates payable Zakat
+- 🌍 **Multilingual Support** - Available in English, Arabic, and French
+- 📁 **Data Import** - Upload financial data via JSON files
+- 📅 **Hawl Period Tracking** - Monitors 12-month lunar cycles
+- 💰 **Nisab Reference** - Displays current gold-based Nisab values
+- 📱 **Responsive Design** - Works on all device sizes
 
-## Installation
+## Getting Started
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- A modern web browser (Chrome, Firefox, Edge, or Safari)
+- Node.js v16+
+- npm v8+
 
-### Steps
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/zakat-calculator.git
-   cd zakat-calculator
-   ```
+### Installation
+```bash
+# Clone repository
+git clone https://github.com/your-username/zakat-calculator.git
+cd zakat-calculator
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+# Install dependencies
+npm install
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
+# Build application
+npm run build
 
-4. Open your browser and navigate to:
-   ```
-   http://localhost:3000
-   ```
+# Start development server
+npm run start
+```
 
 ## Usage
 
-1. **Select Language**: Choose your preferred language from the dropdown menu.
-2. **Upload Data**: Click the "Upload" button and select a JSON file containing your financial data.
-3. **View Results**:
-   - The Zakat table will display your Zakat calculations.
-   - The Nisab table will show the Nisab values for the relevant years.
-4. **Switch Languages**: Change the language at any time to see the interface in your preferred language.
+1. **Upload Data**  
+   Prepare a JSON file following this format:
+   ```json
+   {
+     "nisabData": {
+       "2023": 5423.76
+     },
+     "monthlyData": [
+       {
+         "Date": "08/2023",
+         "Amount": 1500.00,
+         "Interest": 0
+       }
+     ]
+   }
+   ```
 
-## File Format
+2. **Calculate Zakat**
+    - Click "Process Uploads" after selecting your file
+    - View results in the interactive tables
+    - Switch languages using the top-right dropdown
 
-The application accepts JSON files with the following structure:
+## Development Setup
 
-```json
-{
-  "nisabData": {
-    "2022": 4810,
-    "2023": 5423.76
-  },
-  "monthlyData": [
-    {
-      "Date": "08/2022",
-      "Amount": 1458.05,
-      "Interest": null
-    },
-    {
-      "Date": "09/2022",
-      "Amount": 1600.00,
-      "Interest": 10.50
-    }
-  ],
-  "goldApiKey": "your_gold_api_key_here"
-}
+```bash
+# Install dependencies
+npm install
+
+# Start development server with hot reload
+npm run start
+
+# Build for production
+npm run build
+```
+
+## File Structure
+```
+zakat-calculator/
+├── dist/           # Production build
+├── js/             # Source scripts
+├── index.html      # Main application
+├── style.css       # Stylesheet
+└── package.json    # Dependency management
+```
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+
+## Acknowledgments
+
+- Gold price data from [GoldAPI.io](https://www.goldapi.io)
+- Hijri date conversion by [Aladhan API](https://aladhan.com)
