@@ -1,251 +1,251 @@
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            background-color: #f5f8fa;
-            color: #333;
-            direction: ltr;
-        }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #f5f8fa;
+    color: #333;
+    direction: ltr;
+}
 
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-        h2 {
-            color: #2c3e50;
-            margin-top: 0;
-            text-align: center;
-        }
+h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    text-align: center;
+}
 
-        .table-container {
-            margin-bottom: 40px;
-            overflow-x: auto;
-        }
+.table-container {
+    margin-bottom: 40px;
+    overflow-x: auto;
+}
 
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            background-color: #fff;
-            margin-top: 20px;
-        }
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    margin-top: 20px;
+}
 
-        th, td {
-            padding: 14px 18px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
+th, td {
+    padding: 14px 18px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
 
-        th {
-            background-color: #3498db;
-            color: white;
-            font-weight: 600;
-        }
+th {
+    background-color: #3498db;
+    color: white;
+    font-weight: 600;
+}
 
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
 
-        tr:hover {
-            background-color: #f1f1f1;
-        }
+tr:hover {
+    background-color: #f1f1f1;
+}
 
-        .hawl-start {
-            background-color: #fff3cd;
-        }
+.hawl-start {
+    background-color: #fff3cd;
+}
 
-        .zakat-due {
-            background-color: #d4edda;
-            font-weight: bold;
-        }
+.zakat-due {
+    background-color: #d4edda;
+    font-weight: bold;
+}
 
-        .below-nisab {
-            background-color: #f8d7da;
-        }
+.below-nisab {
+    background-color: #f8d7da;
+}
 
-        .currency {
-            font-family: 'Courier New', Courier, monospace;
-        }
+.currency {
+    font-family: 'Courier New', Courier, monospace;
+}
 
-        .api-note {
-            color: #888;
-            font-size: 0.9em;
-            margin-top: 10px;
-            text-align: center;
-        }
+.api-note {
+    color: #888;
+    font-size: 0.9em;
+    margin-top: 10px;
+    text-align: center;
+}
 
-        .error {
-            color: red;
-            font-weight: bold;
-            margin-top: 10px;
-            text-align: center;
-        }
+.error {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+}
 
-        .language-selector {
-            margin-bottom: 20px;
-            text-align: right;
-            position: relative;
-        }
+.language-selector {
+    margin-bottom: 20px;
+    text-align: right;
+    position: relative;
+}
 
-        .language-selector select {
-            background-color: #f8f9fa;
-            color: #333;
-            padding: 8px 32px 8px 16px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            font-size: 16px;
-        }
+.language-selector select {
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 8px 32px 8px 16px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    font-size: 16px;
+}
 
-        .language-selector select:hover {
-            border-color: #999;
-            background-color: #e9ecef;
-        }
+.language-selector select:hover {
+    border-color: #999;
+    background-color: #e9ecef;
+}
 
-        .language-selector select:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
-        }
+.language-selector select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
+}
 
-        .language-selector select::-ms-expand {
-            display: none;
-        }
+.language-selector select::-ms-expand {
+    display: none;
+}
 
-        .language-selector::after {
-            content: '\25BC';
-            position: absolute;
-            top: 50%;
-            right: 12px;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: #333;
-        }
+.language-selector::after {
+    content: '\25BC';
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #333;
+}
 
-        body[lang="ar"] {
-            direction: rtl;
-            /*
-            font-family: 'Amiri', serif;
-            */
-        }
+body[lang="ar"] {
+    direction: rtl;
+    /*
+    font-family: 'Amiri', serif;
+    */
+}
 
-        body[lang="ar"] .language-selector {
-            text-align: left;
-        }
+body[lang="ar"] .language-selector {
+    text-align: left;
+}
 
-        body[lang="ar"] .language-selector select {
-            padding: 8px 16px 8px 32px;
-        }
+body[lang="ar"] .language-selector select {
+    padding: 8px 16px 8px 32px;
+}
 
-        body[lang="ar"] .language-selector::after {
-            right: auto;
-            left: 12px;
-        }
+body[lang="ar"] .language-selector::after {
+    right: auto;
+    left: 12px;
+}
 
-        body[lang="ar"] th, body[lang="ar"] td {
-            text-align: right;
-        }
+body[lang="ar"] th, body[lang="ar"] td {
+    text-align: right;
+}
 
-        body[lang="ar"] .api-note {
-            text-align: right;
-        }
+body[lang="ar"] .api-note {
+    text-align: right;
+}
 
-        .loading {
-            text-align: center;
-            margin: 20px 0;
-            font-style: italic;
-            color: #666;
-        }
+.loading {
+    text-align: center;
+    margin: 20px 0;
+    font-style: italic;
+    color: #666;
+}
 
-        .file-upload {
-            margin: 20px 0;
-            padding: 20px;
-            border: 2px dashed #3498db;
-            border-radius: 8px;
-            text-align: center;
-            background-color: #f8f9fa;
-        }
+.file-upload {
+    margin: 20px 0;
+    padding: 20px;
+    border: 2px dashed #3498db;
+    border-radius: 8px;
+    text-align: center;
+    background-color: #f8f9fa;
+}
 
-        .file-upload h3 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
+.file-upload h3 {
+    margin-top: 0;
+    color: #2c3e50;
+}
 
-        .file-upload-inputs {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 15px;
-        }
+.file-upload-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+}
 
-        .file-upload-input {
-            margin: 0 auto;
-            max-width: 400px;
-        }
+.file-upload-input {
+    margin: 0 auto;
+    max-width: 400px;
+}
 
-        .file-upload-input label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            text-align: left;
-        }
+.file-upload-input label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    text-align: left;
+}
 
-        .file-upload-input input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-        }
+.file-upload-input input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
 
-        .file-upload button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
+.file-upload button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
 
-        .file-upload button:hover {
-            background-color: #2980b9;
-        }
+.file-upload button:hover {
+    background-color: #2980b9;
+}
 
-        .file-upload-info {
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #666;
-        }
+.file-upload-info {
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #666;
+}
 
-        .file-upload-example {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f5f5f5;
-            border-radius: 4px;
-            text-align: left;
-            overflow: auto;
-            max-height: 150px;
-            font-family: monospace;
-            font-size: 0.9em;
-        }
+.file-upload-example {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    text-align: left;
+    overflow: auto;
+    max-height: 150px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
 
-        .loading {
-            text-align: center;
-            font-style: italic;
-            color: #666;
-            padding: 20px;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
+.loading {
+    text-align: center;
+    font-style: italic;
+    color: #666;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    margin: 20px 0;
+}
