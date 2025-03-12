@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="app-title">Zakat Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <header class="app-header">
+        <div class="language-selector">
+            <label for="languageSelect" data-i18n="select-language"></label>
+            <select id="languageSelect" aria-label="Select language">
+                <option value="en">🇬🇧 English</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="ar">🇸🇦 العربية</option>
+            </select>
+        </div>
+    </header>
+
+    <main>
+        <section class="file-upload-section" aria-labelledby="uploadHeading">
+            <h2 id="uploadHeading" data-i18n="upload-section-title"></h2>
+            <div class="file-upload">
+                <div class="file-upload-inputs">
+                    <div class="file-upload-input">
+                        <input type="file" id="dataUpload" accept=".json"
+                               aria-describedby="fileFormatHelp"
+                               aria-label="Upload financial data file">
+                    </div>
+                </div>
+                <button type="button" class="primary-button"
+                        data-i18n="process-uploads">Process Uploads
+                </button>
+                <div id="fileFormatHelp" class="file-upload-info">
+                    <p data-i18n="upload-format-info"></p>
+                    <details class="file-upload-example">
+                        <summary data-i18n="example-format-summary"></summary>
+                        <pre><code>
+{
+  "nisabData": {
+    "2022": 4810,
+    "2023": 5423.76
+  },
+  "monthlyData": [
+    {
+      "Date": "08/2022",
+      "Amount": 1458.05,
+      "Interest": null
+    }
+  ],
+  "goldApiKey": "optional_key_here"
+}
+                        </code></pre>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <section aria-labelledby="zakatResults">
+            <h2 id="zakatResults" data-i18n="zakat-calculation-title"></h2>
+            <div id="zakatTable" class="table-container" role="region"
+                 aria-live="polite" aria-atomic="true">
+                <div class="loading" data-i18n="upload-data-prompt"></div>
+            </div>
+        </section>
+
+        <section aria-labelledby="nisabReference">
+            <h2 id="nisabReference" data-i18n="nisab-reference-title"></h2>
+            <div id="nisabTable" class="table-container" role="region"
+                 aria-live="polite" aria-atomic="true">
+                <div class="loading" data-i18n="upload-data-prompt"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p class="api-note" data-i18n="api-note"></p>
+        <div id="apiError" class="error" role="alert"
+             aria-live="assertive" style="display: none;"
+             data-i18n="api-error"></div>
+    </footer>
+</div>
+
+<!-- Modern ES Module Pattern -->
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
