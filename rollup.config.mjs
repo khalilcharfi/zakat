@@ -5,15 +5,15 @@ export default {
     input: './js/app.js',
     output: {
         dir: 'dist',
-        format: 'es'
+        format: 'iife', // Immediately Invoked Function Expression
+        name: 'ZakatCalculator'
     },
     plugins: [
         nodeResolve(),
         copy({
             targets: [
                 { src: 'index.html', dest: 'dist' },
-                { src: 'style.css', dest: 'dist' },
-                { src: 'js/**/*', dest: 'dist/js' }
+                { src: 'style.css', dest: 'dist' }
             ]
         })
     ]

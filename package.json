@@ -1,19 +1,23 @@
 {
   "name": "zakat-calculator",
   "version": "1.0.0",
+  "homepage": "https://khalilcharfi.github.io/zakat-calculator",
   "type": "module",
   "scripts": {
     "clean": "rm -rf dist/ && mkdir -p dist/js",
     "build": "./scripts/build.sh",
+    "deploy": "gh-pages -d dist",
     "serve": "live-server dist --port=3000",
     "dev": "./scripts/dev.sh",
-    "full-build": "npm run clean && npm run build && npm run serve"
+    "full-build": "npm run clean && npm run build && npm run serve",
+    "build-standalone": "./scripts/build-standalone.sh"
   },
   "engines": {
     "node": ">=16.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "gh-pages": "^6.3.0",
     "live-server": "^1.2.2",
     "npm-run-all": "^4.1.5",
     "rollup": "^3.29.4",
