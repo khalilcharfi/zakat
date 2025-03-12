@@ -1,0 +1,19 @@
+{
+  "name": "zakat-calculator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "description": "",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "live-server": "^1.2.2",
+    "rollup": "^4.35.0",
+    "rollup-plugin-copy": "^3.5.0"
+  }
+}
