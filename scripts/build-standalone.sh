@@ -25,7 +25,7 @@ npx rollup -c rollup.config.mjs
 # Copy assets
 echo "📁 Copying static files..."
 cp "$PROJECT_ROOT/index.html" "$DIST_DIR/"
-cp "$PROJECT_ROOT/style.css" "$DIST_DIR/"
+cp "$PROJECT_ROOT/css/style.css" "$DIST_DIR/css/"
 
 # Create zip archive
 echo "📦 Creating zip archive..."

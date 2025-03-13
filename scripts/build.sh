@@ -4,11 +4,12 @@
 echo "🧹 Cleaning old build..."
 rm -rf dist/
 mkdir -p dist/js
+mkdir -p dist/css
 
 # Copy static assets
 echo "📁 Copying static files..."
 cp index.html dist/
-cp style.css dist/
+cp -R css/* dist/css/
 cp -R js/* dist/js/
 
 # Build with Rollup
