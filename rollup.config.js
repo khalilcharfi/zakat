@@ -4,7 +4,7 @@ import copy from 'rollup-plugin-copy';
 export default {
     input: './js/app.js',
     output: {
-        dir: 'dist',
+        file: 'dist/app.js',
         format: 'es'
     },
     plugins: [
@@ -12,8 +12,6 @@ export default {
         copy({
             targets: [
                 { src: 'index.html', dest: 'dist' },
-                { src: 'style.css', dest: 'dist' },
-                { src: 'js/**/*', dest: 'dist/js' },
                 { src: 'css/**/*', dest: 'dist/css' },
                 { src: 'img/**/*', dest: 'dist/img' }
             ]
