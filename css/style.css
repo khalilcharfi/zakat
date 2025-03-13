@@ -21,12 +21,15 @@ h2 {
     text-align: center;
 }
 
+/* Table container - consolidated styles */
 .table-container {
+    width: 100%;
     margin-bottom: 40px;
     overflow-x: auto;
 }
 
-table {
+/* Base table styles */
+table, .zakat-table {
     border-collapse: collapse;
     width: 100%;
     border-radius: 8px;
@@ -34,39 +37,60 @@ table {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-color: #fff;
     margin-top: 20px;
+    border-spacing: 0;
 }
 
-th, td {
+/* Header styles */
+th {
+    background-color: #3498db;
+    color: white;
+    font-weight: 600;
+    padding: 14px 18px;
+    text-align: center;
+    border-bottom: 2px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+}
+
+/* Cell styles */
+td {
     padding: 14px 18px;
     text-align: center;
     border-bottom: 1px solid #ddd;
 }
 
-th {
-    background-color: #3498db;
-    color: white;
-    font-weight: 600;
+/* Base row styling - replacing odd/even alternating colors */
+tr {
+    background-color: #fff;
+    transition: background-color 0.2s ease;
 }
 
-tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-tr:hover:not(.hawl-start):not(.zakat-due):not(.below-nisab) {
+/* Hover effect */
+tr:hover:not(.hawl-start):not(.zakat-due):not(.below-nisab):not(.hawl-continues):not(.hawl-broken) {
     background-color: #f1f1f1;
 }
 
-.hawl-start {
+/* Special row styling */
+tr.hawl-start {
     background-color: #fff3cd;
 }
 
-.zakat-due {
+tr.hawl-continues {
+    background-color: #f1f8e9;
+}
+
+tr.hawl-broken {
+    background-color: #ffebee;
+}
+
+tr.zakat-due {
     background-color: #d4edda;
     font-weight: bold;
 }
 
-.below-nisab {
+tr.below-nisab {
     background-color: #f8d7da;
+    color: #757575;
 }
 
 .currency {
@@ -164,6 +188,9 @@ body[lang="ar"] .api-note {
     margin: 20px 0;
     font-style: italic;
     color: #666;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
 }
 
 .file-upload {
@@ -240,12 +267,38 @@ body[lang="ar"] .api-note {
     font-size: 0.9em;
 }
 
-.loading {
-    text-align: center;
-    font-style: italic;
-    color: #666;
-    padding: 20px;
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    margin: 20px 0;
+.filter-controls {
+    margin-bottom: 15px;
+}
+
+.toggle-control {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.toggle-control input {
+    margin-right: 8px;
+}
+
+/* Additional styling for zakat-table */
+.zakat-table th:first-child,
+.zakat-table td:first-child {
+    text-align: left;
+}
+
+/* Responsive table adjustments */
+@media screen and (max-width: 768px) {
+    .zakat-table, table {
+        font-size: 0.9rem;
+    }
+
+    th, td {
+        padding: 8px 6px;
+    }
+}
+
+/* Hide rows when filter is applied */
+.hide {
+    display: none !important;
 }

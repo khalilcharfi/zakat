@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +9,7 @@
     <link rel="shortcut icon" href="img/favicon.ico"/>
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png"/>
     <link rel="manifest" href="img/site.webmanifest"/>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="container">
@@ -63,6 +64,12 @@
 
         <section aria-labelledby="zakatResults">
             <h2 id="zakatResults" data-i18n="zakat-calculation-title"></h2>
+            <div class="filter-controls">
+                <label class="toggle-control">
+                    <input type="checkbox" id="filterZakatToggle">
+                    <span data-i18n="filter-zakat-due">Show only rows with due date or eligible zakat</span>
+                </label>
+            </div>
             <div id="zakatTable" class="table-container" role="region"
                  aria-live="polite" aria-atomic="true">
                 <div class="loading" data-i18n="upload-data-prompt"></div>
