@@ -1,31 +1,25 @@
-name: Deploy to GitHub Pages
-
+name: Deploy Site
 on:
   push:
-    branches:
-      - main  # Trigger the workflow on push to the main branch
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-minimal
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '16'  # Specify your Node.js version as per your package.json
-
-      - name: Install dependencies
-        run: npm install  # Install all project dependencies
-
-      - name: Clean, Build, and Deploy
-        run: |
-          npm run clean  # Clean up previous build if exists
-          npm run build  # Run your custom build script
-          npm run deploy  # Deploy the build to GitHub Pages
-
-      - name: Success message
-        run: echo "Deployment to GitHub Pages successful!"
+          node-version: '16'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run clean
+      - run: npm run build
+      - run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+          npm run deploy -- -u "github-actions <github-actions@github.com>"
