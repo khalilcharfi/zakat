@@ -44,7 +44,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -62,14 +61,15 @@ jobs:
           path: dist
 
       - name: Deploy project
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           
-          # Set up gh-pages to use the GITHUB_TOKEN
-          npx gh-pages -d dist -u "${GITHUB_ACTOR}" -r "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" -m "Deploy Calculator [skip ci]"
+          # Configure git to use HTTPS with the token
+          git remote set-url origin "https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
+          
+          # Use GH_TOKEN as environment variable for gh-pages
+          GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" npm run deploy -- -m "Deploy Calculator [skip ci]"
 
       - name: Post-deployment clean-up
         if: always()
