@@ -13,7 +13,8 @@ export default {
             targets: [
                 { src: 'index.html', dest: 'dist' },
                 { src: 'style.css', dest: 'dist' },
-                { src: 'js/**/*', dest: 'dist/js' }
+                { src: 'js/**/*', dest: 'dist/js' },
+                { src: 'img/**/*', dest: 'dist/img' }
             ]
         })
     ]

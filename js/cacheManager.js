@@ -1,30 +1,38 @@
 export class CacheManager {
-  constructor(cacheKey, ttl, parseFunction) {
-    this.cacheKey = cacheKey;
-    this.ttl = ttl;
-    this.parseFunction = parseFunction;
-  }
-
-  load(defaultValue) {
-    const storedData = localStorage.getItem(this.cacheKey);
-    if (storedData) {
-      try {
-        const { data, timestamp } = JSON.parse(storedData);
-        if (Date.now() - timestamp < this.ttl) {
-          return this.parseFunction(data);
-        }
-      } catch (e) {
-        console.error('Cache parse error:', e);
-      }
+    constructor(cacheKey, ttl, parseFunction) {
+        this.cacheKey = cacheKey;
+        this.ttl = ttl;
+        this.parseFunction = parseFunction || (data => data);
     }
-    return defaultValue;
-  }
 
-  save(data) {
-    const cacheData = {
-      data: data,
-      timestamp: Date.now()
-    };
-    localStorage.setItem(this.cacheKey, JSON.stringify(cacheData));
-  }
+    load(defaultValue) {
+        try {
+            const storedData = localStorage.getItem(this.cacheKey);
+            if (!storedData) return defaultValue;
+
+            const { data, timestamp } = JSON.parse(storedData);
+            return (Date.now() - timestamp < this.ttl)
+                ? this.parseFunction(data)
+                : defaultValue;
+        } catch (e) {
+            console.error('Cache load error:', e);
+            return defaultValue;
+        }
+    }
+
+    save(data) {
+        try {
+            localStorage.setItem(
+                this.cacheKey,
+                JSON.stringify({
+                    data,
+                    timestamp: Date.now()
+                })
+            );
+            return true;
+        } catch (e) {
+            console.error('Cache save error:', e);
+            return false;
+        }
+    }
 }

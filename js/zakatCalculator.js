@@ -14,7 +14,7 @@ export class ZakatCalculator {
 
     init() {
         this.setupEventListeners();
-        this.languageManager.changeLanguage('en');
+        this.languageManager.changeLanguage(['fr', 'ar', 'en'].includes(navigator.language.split('-')[0]) ? navigator.language.split('-')[0] : 'en');
     }
 
     setupEventListeners() {

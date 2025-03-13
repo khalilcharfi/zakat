@@ -10,7 +10,8 @@
     "serve": "serve dist",
     "dev": "./scripts/dev.sh",
     "full-build": "npm run clean && npm run build && npm run serve",
-    "build-standalone": "./scripts/build-standalone.sh"
+    "build-standalone": "./scripts/build-standalone.sh",
+    "watch-and-serve": "rollup -c rollup.config.mjs -w & serve dist"
   },
   "engines": {
     "node": ">=16.0.0"
