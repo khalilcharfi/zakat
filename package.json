@@ -7,6 +7,7 @@
     "clean": "rm -rf dist/ && mkdir -p dist/js",
     "build": "./scripts/build.sh",
     "deploy": "gh-pages -d dist",
+    "release": "NODE_ENV=production npm run build && npm run deploy",
     "serve": "serve dist",
     "dev": "./scripts/dev.sh",
     "full-build": "npm run clean && npm run build && npm run serve",
