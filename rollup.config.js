@@ -14,6 +14,7 @@ export default {
                 { src: 'index.html', dest: 'dist' },
                 { src: 'style.css', dest: 'dist' },
                 { src: 'js/**/*', dest: 'dist/js' },
+                { src: 'css/**/*', dest: 'dist/css' },
                 { src: 'img/**/*', dest: 'dist/img' }
             ]
         })

@@ -1,3 +1,5 @@
-import { ZakatCalculator } from './zakatCalculator.js';
+import {ZakatUIController} from "./zakatUIController.js";
 
-document.addEventListener('DOMContentLoaded', () => new ZakatCalculator());
+document.addEventListener('DOMContentLoaded', () => {
+    new ZakatUIController();
+});

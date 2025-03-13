@@ -1,232 +1,64 @@
 {
   "nisabData": {
-  "2021":4000.00,
-  "2022": 4810,
-  "2023": 5423.76,
-  "2024": 5992.38,
-  "2025": 7413.44
-},
-"monthlyData": [
-  {
-    "Date": "09/2021",
-    "Amount": 1200.00,
-    "Interest": null
+    "2021": 4000.00,
+    "2022": 4810,
+    "2023": 5423.76,
+    "2024": 5992.38,
+    "2025": 7413.44
   },
-  {
-    "Date": "10/2021",
-    "Amount": 1350.25,
-    "Interest": 9.80
-  },
-  {
-    "Date": "11/2021",
-    "Amount": 1490.70,
-    "Interest": null
-  },
-  {
-    "Date": "12/2021",
-    "Amount": 1750.15,
-    "Interest": 11.25
-  },
-  {
-    "Date": "01/2022",
-    "Amount": 1880.00,
-    "Interest": null
-  },
-  {
-    "Date": "02/2022",
-    "Amount": 2005.60,
-    "Interest": 14.70
-  },
-  {
-    "Date": "03/2022",
-    "Amount": 2380.10,
-    "Interest": null
-  },
-  {
-    "Date": "04/2022",
-    "Amount": 2890.30,
-    "Interest": 17.80
-  },
-  {
-    "Date": "05/2022",
-    "Amount": 3100.00,
-    "Interest": null
-  },
-  {
-    "Date": "06/2022",
-    "Amount": 3600.45,
-    "Interest": 19.10
-  },
-  {
-    "Date": "07/2022",
-    "Amount": 3900.00,
-    "Interest": null
-  },
-  {
-    "Date": "08/2022",
-    "Amount": 1450.60,
-    "Interest": null
-  },
-  {
-    "Date": "09/2022",
-    "Amount": 3680.75,
-    "Interest": 14.90
-  },
-  {
-    "Date": "10/2022",
-    "Amount": 4020.90,
-    "Interest": null
-  },
-  {
-    "Date": "11/2022",
-    "Amount": 6080.25,
-    "Interest": null
-  },
-  {
-    "Date": "12/2022",
-    "Amount": 7550.85,
-    "Interest": 19.75
-  },
-  {
-    "Date": "01/2023",
-    "Amount": 8120.00,
-    "Interest": null
-  },
-  {
-    "Date": "02/2023",
-    "Amount": 9400.10,
-    "Interest": 17.20
-  },
-  {
-    "Date": "03/2023",
-    "Amount": 11350.30,
-    "Interest": null
-  },
-  {
-    "Date": "04/2023",
-    "Amount": 12500.50,
-    "Interest": null
-  },
-  {
-    "Date": "05/2023",
-    "Amount": 8300.40,
-    "Interest": 26.10
-  },
-  {
-    "Date": "06/2023",
-    "Amount": 11900.25,
-    "Interest": null
-  },
-  {
-    "Date": "07/2023",
-    "Amount": 7200.00,
-    "Interest": null
-  },
-  {
-    "Date": "08/2023",
-    "Amount": 6450.75,
-    "Interest": 24.60
-  },
-  {
-    "Date": "09/2023",
-    "Amount": 7780.10,
-    "Interest": null
-  },
-  {
-    "Date": "10/2023",
-    "Amount": 8125.45,
-    "Interest": null
-  },
-  {
-    "Date": "11/2023",
-    "Amount": 9500.60,
-    "Interest": 27.85
-  },
-  {
-    "Date": "12/2023",
-    "Amount": 12000.00,
-    "Interest": null
-  },
-  {
-    "Date": "01/2024",
-    "Amount": 12900.80,
-    "Interest": null
-  },
-  {
-    "Date": "02/2024",
-    "Amount": 13950.40,
-    "Interest": 31.75
-  },
-  {
-    "Date": "03/2024",
-    "Amount": 16020.70,
-    "Interest": null
-  },
-  {
-    "Date": "04/2024",
-    "Amount": 16550.10,
-    "Interest": 42.00
-  },
-  {
-    "Date": "05/2024",
-    "Amount": 16320.20,
-    "Interest": null
-  },
-  {
-    "Date": "06/2024",
-    "Amount": 10150.55,
-    "Interest": 92.50
-  },
-  {
-    "Date": "07/2024",
-    "Amount": 10520.00,
-    "Interest": null
-  },
-  {
-    "Date": "08/2024",
-    "Amount": 10480.45,
-    "Interest": 47.00
-  },
-  {
-    "Date": "09/2024",
-    "Amount": 9950.30,
-    "Interest": null
-  },
-  {
-    "Date": "10/2024",
-    "Amount": 13850.70,
-    "Interest": 53.20
-  },
-  {
-    "Date": "11/2024",
-    "Amount": 18600.25,
-    "Interest": null
-  },
-  {
-    "Date": "12/2024",
-    "Amount": 19080.10,
-    "Interest": 71.40
-  },
-  {
-    "Date": "01/2025",
-    "Amount": 20250.00,
-    "Interest": null
-  },
-  {
-    "Date": "02/2025",
-    "Amount": 21300.50,
-    "Interest": 61.80
-  },
-  {
-    "Date": "03/2025",
-    "Amount": 21850.90,
-    "Interest": null
-  },
-  {
-    "Date": "04/2025",
-    "Amount": 22390.60,
-    "Interest": 85.10
-  }
-], "goldApiKey": ""
-
+  "monthlyData": [
+    { "date": "01/2021", "amount": 1800.00, "interest": null },
+    { "date": "02/2021", "amount": 2100.25, "interest": 8.50 },
+    { "date": "03/2021", "amount": 2200.75, "interest": null },
+    { "date": "04/2021", "amount": 2500.80, "interest": 12.30 },
+    { "date": "05/2021", "amount": 2800.00, "interest": null },
+    { "date": "06/2021", "amount": 2900.35, "interest": 15.00 },
+    { "date": "07/2021", "amount": 3500.00, "interest": null },
+    { "date": "08/2021", "amount": 3700.50, "interest": 20.10 },
+    { "date": "09/2021", "amount": 1200.00, "interest": null },
+    { "date": "10/2021", "amount": 1350.25, "interest": 9.80 },
+    { "date": "11/2021", "amount": 1490.70, "interest": null },
+    { "date": "12/2021", "amount": 1750.15, "interest": 11.25 },
+    { "date": "01/2022", "amount": 1880.00, "interest": null },
+    { "date": "02/2022", "amount": 2005.60, "interest": 14.70 },
+    { "date": "03/2022", "amount": 2380.10, "interest": null },
+    { "date": "04/2022", "amount": 2890.30, "interest": 17.80 },
+    { "date": "05/2022", "amount": 3100.00, "interest": null },
+    { "date": "06/2022", "amount": 3600.45, "interest": 19.10 },
+    { "date": "07/2022", "amount": 3900.00, "interest": null },
+    { "date": "08/2022", "amount": 1450.60, "interest": null },
+    { "date": "09/2022", "amount": 3680.75, "interest": 14.90 },
+    { "date": "10/2022", "amount": 4020.90, "interest": null },
+    { "date": "11/2022", "amount": 6080.25, "interest": null },
+    { "date": "12/2022", "amount": 7550.85, "interest": 19.75 },
+    { "date": "01/2023", "amount": 8120.00, "interest": null },
+    { "date": "02/2023", "amount": 9400.10, "interest": 17.20 },
+    { "date": "03/2023", "amount": 11350.30, "interest": null },
+    { "date": "04/2023", "amount": 12500.50, "interest": null },
+    { "date": "05/2023", "amount": 8300.40, "interest": 26.10 },
+    { "date": "06/2023", "amount": 11900.25, "interest": null },
+    { "date": "07/2023", "amount": 7200.00, "interest": null },
+    { "date": "08/2023", "amount": 6450.75, "interest": 24.60 },
+    { "date": "09/2023", "amount": 7780.10, "interest": null },
+    { "date": "10/2023", "amount": 8125.45, "interest": null },
+    { "date": "11/2023", "amount": 9500.60, "interest": 27.85 },
+    { "date": "12/2023", "amount": 12000.00, "interest": null },
+    { "date": "01/2024", "amount": 12900.80, "interest": null },
+    { "date": "02/2024", "amount": 13950.40, "interest": 31.75 },
+    { "date": "03/2024", "amount": 16020.70, "interest": null },
+    { "date": "04/2024", "amount": 16550.10, "interest": 42.00 },
+    { "date": "05/2024", "amount": 16320.20, "interest": null },
+    { "date": "06/2024", "amount": 10150.55, "interest": 92.50 },
+    { "date": "07/2024", "amount": 10520.00, "interest": null },
+    { "date": "08/2024", "amount": 10480.45, "interest": 47.00 },
+    { "date": "09/2024", "amount": 9950.30, "interest": null },
+    { "date": "10/2024", "amount": 13850.70, "interest": 53.20 },
+    { "date": "11/2024", "amount": 18600.25, "interest": null },
+    { "date": "12/2024", "amount": 19080.10, "interest": 71.40 },
+    { "date": "01/2025", "amount": 20250.00, "interest": null },
+    { "date": "02/2025", "amount": 21300.50, "interest": 61.80 },
+    { "date": "03/2025", "amount": 21850.90, "interest": null },
+    { "date": "04/2025", "amount": 22390.60, "interest": 85.10 }
+  ],
+  "goldApiKey": ""
 }
