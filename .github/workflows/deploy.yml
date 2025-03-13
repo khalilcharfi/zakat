@@ -3,41 +3,29 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - main  # Trigger the workflow on push to the main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: '16'  # Specify your Node.js version as per your package.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm install  # Install all project dependencies
 
-      - name: Build project
-        run: npm run build
+      - name: Clean, Build, and Deploy
+        run: |
+          npm run clean  # Clean up previous build if exists
+          npm run build  # Run your custom build script
+          npm run deploy  # Deploy the build to GitHub Pages
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-
-  pages-build-deployment:
-    runs-on: ubuntu-latest
-    needs: deploy
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Success message
+        run: echo "Deployment to GitHub Pages successful!"
