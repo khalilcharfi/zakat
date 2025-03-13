@@ -7,9 +7,11 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -22,20 +24,65 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      - name: Clean and build
-        run: |
-          npm run clean
-          npm run build
+      - name: Build project
+        run: npm run build
 
-      - name: Deploy to GitHub Pages
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculator-build
+          path: dist
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: calculator-build
+          path: dist
+
+      - name: Deploy project
         env:
-          NODE_DEBUG: gh-pages
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           npm run deploy -- -m "Deploy Calculator [skip ci]"
-        
+
+      - name: Post-deployment clean-up
+        if: always()
+        run: |
+          echo "Deployment completed."
+          rm -rf dist
+
+  report-status:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Report deployment status
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "✅ Deployment successful"
+            exit 0
+          else
+            echo "❌ Deployment failed"
+            exit 1
+          fi
