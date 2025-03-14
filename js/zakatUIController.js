@@ -1,7 +1,7 @@
 import {DateConverter} from './dateConverter.js';
 import {NisabService} from './nisabService.js';
 import {LanguageManager} from './languageManager.js';
-import {ZakatCalculator} from './ZakatCalculator.js';
+import {ZakatCalculator} from './zakatCalculator.js';
 
 export class ZakatUIController {
     constructor() {
