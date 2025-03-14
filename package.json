@@ -12,7 +12,9 @@
     "dev": "./scripts/dev.sh",
     "full-build": "npm run clean && npm run build && npm run serve",
     "build-standalone": "./scripts/build-standalone.sh",
-    "watch-and-serve": "rollup -c rollup.config.mjs -w & serve dist"
+    "watch-and-serve": "rollup -c rollup.config.mjs -w & serve dist",
+    "update-version": "node update-version.js",
+    "prebuild": "npm run update-version"
   },
   "engines": {
     "node": ">=16.0.0"
