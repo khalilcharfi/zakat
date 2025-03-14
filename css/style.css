@@ -302,3 +302,53 @@ body[lang="ar"] .api-note {
 .hide {
     display: none !important;
 }
+
+/* Container for download icon - push to right side */
+.download-icon-container {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+/* Style for the download icon */
+.download-icon-container img {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s ease;
+}
+
+/* Hover effect on the download icon */
+.download-icon-container a:hover img {
+    transform: scale(1.1);
+}
+
+/* RTL support for Arabic */
+body[lang="ar"] .download-icon-container {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+/* Container needs to be relative for absolute positioning to work within it */
+.content-container {
+    position: relative;
+    width: 100%;
+    padding-right: 30px; /* Make space for the absolute positioned icon */
+}
+
+/* The summary text stays in normal flow */
+.summary-text {
+    /* Default styling for the summary text */
+}
+
+/* Position the download icon absolutely to the right side */
+.download-icon-container {
+    position: absolute;
+    right: 0;
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Perfect vertical centering */
+}
+
+/* Optional: Adjust the icon or image size if needed */
+.download-icon-container img {
+    display: block; /* Remove any extra space below image */
+}
