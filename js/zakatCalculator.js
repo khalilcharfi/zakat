@@ -33,7 +33,7 @@ export class ZakatCalculator {
             });
 
         const uniqueDates = [...new Set(sortedData.map(entry => entry.date))];
-        
+
         // Get all unique year-month combinations instead of just years
         const uniqueYearMonths = sortedData.map(entry => {
             const [month, year] = entry.date.split('/');
@@ -46,10 +46,10 @@ export class ZakatCalculator {
                 date,
                 hijri: await this.dateConverter.getHijriDate(date)
             })));
-            
+
             // Create a map of hijri dates
             const hijriDateMap = new Map(hijriDates.map(({date, hijri}) => [date, hijri]));
-            
+
             // Fetch nisab values for each year-month combination
             const nisabPromises = [];
             for (const { year, month } of uniqueYearMonths) {
@@ -65,7 +65,7 @@ export class ZakatCalculator {
                     });
                 }
             }
-            
+
             // Wait for all nisab values to be fetched
             const nisabValues = await Promise.all(
                 nisabPromises.map(async ({ key, year, month, promise }) => {
@@ -78,7 +78,7 @@ export class ZakatCalculator {
                     }
                 })
             );
-            
+
             // Create a map of nisab values by year-month
             const nisabMap = new Map(
                 nisabValues.filter(n => n.value !== null)
@@ -91,13 +91,13 @@ export class ZakatCalculator {
                 const gregorianYear = parseInt(year);
                 const gregorianMonth = parseInt(month);
                 const total = (entry.amount || 0) - (entry.interest || 0);
-                
+
                 // Get nisab value for specific year-month, fall back to year if not available
                 const nisabKey = `${gregorianYear}-${gregorianMonth}`;
-                const nisab = nisabMap.get(nisabKey) || 
+                const nisab = nisabMap.get(nisabKey) ||
                               nisabMap.get(`${gregorianYear}-1`) || // Try January of same year
                               this.nisabService.getNisabValueForYearMonth(gregorianYear, gregorianMonth);
-                
+
                 const hijriDate = hijriDateMap.get(entry.date);
 
                 const { note, zakat, rowClass } = await this.calculateHawlStatus(
@@ -106,7 +106,8 @@ export class ZakatCalculator {
                     hawlState,
                     hijriDate,
                     entry.date,
-                    nisabMap
+                    nisabMap,
+                    hawlState
                 );
 
                 results.push({
@@ -162,7 +163,7 @@ export class ZakatCalculator {
                     if (hawlState.minWealth >= currentNisab) {
                         zakat = hawlState.minWealth * 0.025;
                         // Replace string concatenation with placeholder replacement
-                        note = this.languageManager.translate('hawl-complete-zakat-due').replace('{date}', hawlState.startDate);
+                        note = 'hawl-complete-zakat-due';
                         rowClass = 'zakat-due';
                     } else {
                         note = 'hawl-complete-but-below-nisab';
@@ -198,7 +199,7 @@ export class ZakatCalculator {
             hawlState.startHijriYear = 0;
         }
 
-        return { note, zakat, rowClass };
+        return { note, zakat, rowClass, hawlState };
     }
 
     roundToTwoDecimals(value) {

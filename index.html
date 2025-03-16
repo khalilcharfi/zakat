@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Zakat Calculator</title>
-    
+
     <!-- Preconnect and preload optimizations -->
     <link rel="preconnect" href="https://www.googletagmanager.com">
     <link rel="preload" href="css/style.css" as="style">
-    
+
     <!-- Consolidated icon declarations -->
     <link rel="icon" href="img/favicon.ico">
     <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
     <link rel="manifest" href="img/site.webmanifest">
-    
+
     <!-- CSS with fallback -->
     <link rel="stylesheet" href="css/style.css">
 
@@ -29,7 +29,13 @@
 <body>
 <div class="container">
     <header class="app-header">
-    
+        <div class="language-selector">
+            <select id="languageSelect" aria-label="Select language">
+                <option value="en">🇬🇧 English</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="ar">🇸🇦 العربية</option>
+            </select>
+        </div>
     </header>
 
     <main>

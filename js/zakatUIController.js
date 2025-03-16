@@ -29,7 +29,7 @@ export class ZakatUIController {
                 }
             });
         }
-        
+
         document.querySelector('.file-upload button').addEventListener('click',
             () => this.processUploads());
 
@@ -94,7 +94,7 @@ export class ZakatUIController {
 
         // Validate monthly data structure
         for (const entry of data.monthlyData) {
-            if (!entry.date || typeof entry.date !== 'string' || 
+            if (!entry.date || typeof entry.date !== 'string' ||
                 !entry.amount || isNaN(Number(entry.amount))) {
                 throw new Error('Invalid monthly data format');
             }
@@ -141,6 +141,7 @@ export class ZakatUIController {
         const table = document.createElement('table');
         table.innerHTML = `
         <tr>${this.getTableHeaders().map(h => `<th>${h}</th>`).join('')}</tr>
+
         ${displayData.map(row => `
             <tr class="row ${row.rowClass}">
                 <td>${row.date}</td>
@@ -150,8 +151,8 @@ export class ZakatUIController {
                 <td>${this.formatCurrency(row.total)}</td>
                 <td>${this.formatCurrency(row.nisab)}</td>
                 <td>${row.zakat ? this.formatCurrency(row.zakat) : '-'}</td>
-                <td>${this.languageManager.translate(row.note)}</td>
-            </tr>
+                <td data-i18n="${row.note}">${this.languageManager.translate(row.note).replace('{date}', row.date)}</td>     
+       </tr>
         `).join('')}
     `;
 
@@ -168,7 +169,7 @@ export class ZakatUIController {
         container.innerHTML = '';
 
         const nisabData = this.nisabService.getNisabData();
-        
+
         // Show/hide API note based on data source
         const apiNoteElement = document.querySelector('.api-note');
         if (apiNoteElement) {
