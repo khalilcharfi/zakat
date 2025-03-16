@@ -8,7 +8,7 @@ export class ZakatUIController {
         this.languageManager = new LanguageManager();
         this.dateConverter = new DateConverter();
         this.nisabService = new NisabService();
-        this.calculator = new ZakatCalculator(this.dateConverter, this.nisabService);
+        this.calculator = new ZakatCalculator( this.languageManager, this.dateConverter, this.nisabService);
         this.zakatData = [];
         this.init();
     }
@@ -54,9 +54,8 @@ export class ZakatUIController {
             const file = fileInput.files[0];
             const data = JSON.parse(await file.text());
 
-            if (!data.monthlyData || !data.nisabData) {
-                throw new Error('Invalid file structure');
-            }
+            // Validate JSON structure
+            this.validateJsonData(data);
 
             this.calculator.setMonthlyData(data.monthlyData);
             this.nisabService.setNisabData(data.nisabData);
@@ -69,6 +68,36 @@ export class ZakatUIController {
             this.updateUI();
         } catch (error) {
             this.showErrorState(error);
+        }
+    }
+
+    // Add validation method
+    validateJsonData(data) {
+        if (!data || typeof data !== 'object') {
+            throw new Error('Invalid JSON format');
+        }
+
+        if (!data.monthlyData || !Array.isArray(data.monthlyData) || data.monthlyData.length === 0) {
+            throw new Error('Missing or invalid monthly data');
+        }
+
+        if (!data.nisabData || typeof data.nisabData !== 'object' || Object.keys(data.nisabData).length === 0) {
+            throw new Error('Missing or invalid nisab data');
+        }
+
+        // Validate monthly data structure
+        for (const entry of data.monthlyData) {
+            if (!entry.date || typeof entry.date !== 'string' || 
+                !entry.amount || isNaN(Number(entry.amount))) {
+                throw new Error('Invalid monthly data format');
+            }
+        }
+
+        // Validate nisab data structure
+        for (const [year, value] of Object.entries(data.nisabData)) {
+            if (!/^\d{4}$/.test(year) || isNaN(Number(value))) {
+                throw new Error('Invalid nisab data format');
+            }
         }
     }
 
@@ -132,13 +161,20 @@ export class ZakatUIController {
         container.innerHTML = '';
 
         const nisabData = this.nisabService.getNisabData();
+        
+        // Show/hide API note based on data source
+        const apiNoteElement = document.querySelector('.api-note');
+        if (apiNoteElement) {
+            apiNoteElement.style.display = nisabData.fromApi ? '' : 'none';
+        }
+
         const table = document.createElement('table');
         table.innerHTML = `
             <tr>
                 <th>${this.languageManager.translate('year')}</th>
                 <th>${this.languageManager.translate('nisab-eur')}</th>
             </tr>
-            ${Object.entries(nisabData).map(([year, value]) => `
+            ${Object.entries(nisabData.data).map(([year, value]) => `
                 <tr>
                     <td>${year}</td>
                     <td>${this.formatCurrency(value)}</td>
