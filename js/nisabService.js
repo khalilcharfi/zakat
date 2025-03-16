@@ -1,18 +1,19 @@
-import {CacheManager} from './cacheManager.js';
+import { CacheManager } from './cacheManager.js';
 
 export class NisabService {
+    static API_ENDPOINT = 'https://www.goldapi.io/api/XAU/EUR';
+    static MAX_RETRIES = 2;
+    static RETRY_DELAY = 1000;
+
     constructor() {
         this.cacheManager = new CacheManager(
             'nisabCache',
             24 * 60 * 60 * 1000,
-            (data) => {
-                return data;
-            }
+            data => data || {}
         );
         this.nisabData = this.cacheManager.load({});
         this.goldApiKey = '';
-        // Track ongoing requests to prevent duplicates
-        this.pendingRequests = {};
+        this.pendingRequests = new Map();
     }
 
     setApiKey(apiKey) {
@@ -29,69 +30,58 @@ export class NisabService {
     }
 
     async fetchNisabValue(year) {
+        if (this.nisabData[year]) return this.nisabData[year];
+        if (this.pendingRequests.has(year)) return this.pendingRequests.get(year);
+
+        const request = this.createRequest(year);
+        this.pendingRequests.set(year, request);
+        
         try {
-            // Return cached value if available
-            if (this.nisabData[year]) {
-                return this.nisabData[year];
-            }
-
-            // If there's already a pending request for this year, return that promise
-            if (this.pendingRequests[year]) {
-                return this.pendingRequests[year];
-            }
-            if (!this.goldApiKey) {
-                throw new Error('No API key provided');
-            }
-
-            // Create the request and store its promise
-            this.pendingRequests[year] = (async () => {
-                try {
-                    const response = await fetch('https://www.goldapi.io/api/XAU/EUR', {
-                        headers: {'x-access-token': this.goldApiKey}
-                    });
-
-                    // Handle specific HTTP status codes
-                    if (response.status === 401) {
-                        throw new Error('Authentication failed: Invalid API key');
-                    } else if (response.status === 403) {
-                        throw new Error('Permission denied: Insufficient access rights');
-                    } else if (response.status === 404) {
-                        throw new Error('API endpoint not found');
-                    } else if (!response.ok) {
-                        throw new Error(`Gold API failed with status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-
-                    // Validate the received data structure
-                    if (!data || typeof data.price_gram_24k !== 'number') {
-                        throw new Error('Invalid data format received from API');
-                    }
-
-                    const nisabValue = data.price_gram_24k * 85;
-
-                    // Update cache
-                    this.nisabData[year] = nisabValue;
-                    this.cacheManager.save(this.nisabData);
-                    return nisabValue;
-                } finally {
-                    // Clean up the pending request reference once done
-                    delete this.pendingRequests[year];
-                }
-            })();
-
-            return this.pendingRequests[year];
-        } catch (error) {
-            console.error("Nisab value fetch error:", error);
-
-            // Rethrow with more context if needed
-            if (error.message.includes('API key') ||
-                error.message.includes('Authentication') ||
-                error.message.includes('Permission')) {
-                throw new Error(`API authorization error: ${error.message}`);
-            }
-
-            throw error;
+            return await request;
+        } finally {
+            this.pendingRequests.delete(year);
         }
+    }
+
+    async createRequest(year) {
+        for (let attempt = 0; attempt <= NisabService.MAX_RETRIES; attempt++) {
+            try {
+                this.validateApiKey();
+                const response = await fetch(NisabService.API_ENDPOINT, {
+                    headers: { 'x-access-token': this.goldApiKey },
+                    signal: AbortSignal.timeout(5000)
+                });
+                return this.handleResponse(year, await response.json());
+            } catch (error) {
+                if (attempt === NisabService.MAX_RETRIES) throw this.processError(error);
+                await new Promise(r => setTimeout(r, NisabService.RETRY_DELAY * (attempt + 1)));
+            }
+        }
+    }
+
+    validateApiKey() {
+        if (!this.goldApiKey) throw new Error('No API key provided');
+    }
+
+    handleResponse(year, data) {
+        if (!data?.price_gram_24k || typeof data.price_gram_24k !== 'number') {
+            throw new Error('Invalid API response format');
+        }
+
+        const value = data.price_gram_24k * 85;
+        this.nisabData[year] = value;
+        this.cacheManager.save(this.nisabData);
+        return value;
+    }
+
+    processError(error) {
+        const statusMessages = {
+            401: 'Authentication failed: Invalid API key',
+            403: 'Permission denied: Insufficient access rights',
+            404: 'API endpoint not found'
+        };
+
+        return new Error(statusMessages[error.message.match(/\d+/)?.[0]] || 
+                       `API request failed: ${error.message}`);
     }
 }

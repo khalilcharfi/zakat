@@ -1,4 +1,3 @@
-// Core calculation class - ZakatCalculator.js
 export class ZakatCalculator {
     constructor(dateConverter, nisabService) {
         this.dateConverter = dateConverter;
@@ -13,32 +12,38 @@ export class ZakatCalculator {
     async calculateZakat() {
         const hawlState = {
             isActive: false,
+            startHijriDate: null,
             startDate: null,
-            monthsCount: 0
+            wealthAtStart: 0,
+            minWealth: Infinity,
+            startHijriMonth: 0,
+            startHijriYear: 0
         };
 
-        const sortedData = [...this.monthlyData].filter(entry => {
-            return ((entry.amount || 0) - (entry.interest || 0)) > 0;
-        }).sort((a, b) => new Date(a.date) - new Date(b.date));
+        const sortedData = [...this.monthlyData]
+            .filter(entry => {
+                const netValue = (entry.amount || 0) - (entry.interest || 0);
+                return netValue > 0;
+            })
+            .sort((a, b) => {
+                const [aMonth, aYear] = a.date.split('/');
+                const [bMonth, bYear] = b.date.split('/');
+                return new Date(aYear, aMonth - 1) - new Date(bYear, bMonth - 1);
+            });
 
-        const dateYearMap = new Map();
-        const uniqueDates = new Set();
-        const uniqueYears = new Set();
-
-        sortedData.forEach(entry => {
+        const uniqueDates = [...new Set(sortedData.map(entry => entry.date))];
+        const uniqueYears = [...new Set(sortedData.map(entry => {
             const [month, year] = entry.date.split('/');
-            dateYearMap.set(entry.date, new Date(year, month - 1).getFullYear());
-            uniqueDates.add(entry.date);
-            uniqueYears.add(dateYearMap.get(entry.date));
-        });
+            return new Date(year, month - 1).getFullYear();
+        }))];
 
         try {
             const [hijriDates, nisabValues] = await Promise.all([
-                Promise.all([...uniqueDates].map(async date => ({
+                Promise.all(uniqueDates.map(async date => ({
                     date,
                     hijri: await this.dateConverter.getHijriDate(date)
                 }))),
-                Promise.all([...uniqueYears].map(async year => ({
+                Promise.all(uniqueYears.map(async year => ({
                     year,
                     value: await this.nisabService.fetchNisabValue(year)
                 })))
@@ -48,23 +53,28 @@ export class ZakatCalculator {
             const nisabMap = new Map(nisabValues.map(({year, value}) => [year, value]));
 
             return sortedData.map(entry => {
+                const [month, year] = entry.date.split('/');
+                const gregorianYear = new Date(year, month - 1).getFullYear();
                 const total = (entry.amount || 0) - (entry.interest || 0);
-                const year = dateYearMap.get(entry.date);
-
-                const {
-                    note,
-                    zakat,
-                    rowClass
-                } = this.calculateHawlStatus(total, nisabMap.get(year), hawlState, entry.date);
+                const nisab = nisabMap.get(gregorianYear) || 0;
+                const hijriDate = hijriDateMap.get(entry.date);
+                
+                const { note, zakat, rowClass } = this.calculateHawlStatus(
+                    total, 
+                    nisab, 
+                    hawlState, 
+                    hijriDate,
+                    entry.date
+                );
 
                 return {
                     date: entry.date,
-                    hijriDate: hijriDateMap.get(entry.date),
+                    hijriDate,
                     amount: entry.amount,
                     interest: entry.interest,
-                    total: total,
-                    nisab: nisabMap.get(year),
-                    zakat: zakat,
+                    total,
+                    nisab,
+                    zakat: zakat ? this.roundToTwoDecimals(zakat) : null,
                     note,
                     rowClass
                 };
@@ -75,39 +85,79 @@ export class ZakatCalculator {
         }
     }
 
-    calculateHawlStatus(total, nisab, hawlState, currentDate) {
+    calculateHawlStatus(total, nisab, hawlState, hijriDate, gregorianDate) {
         let note = '', zakat = null, rowClass = '';
-
+        
+   
         if (total >= nisab) {
             if (!hawlState.isActive) {
+                // Start tracking Hawl
                 hawlState.isActive = true;
-                hawlState.startDate = currentDate;
-                hawlState.monthsCount = 1;
+                hawlState.startHijriDate = hijriDate;
+                hawlState.startDate = gregorianDate;
+                hawlState.wealthAtStart = total;
+                hawlState.minWealth = total;
+                
+                // Fixed: Parse Hijri date components correctly as YEAR/MONTH
+                const [startYear, startMonth] = hijriDate.split('/').map(Number);
+                hawlState.startHijriYear = startYear;
+                hawlState.startHijriMonth = startMonth;
+                
                 note = 'above-nisab-hawl-begins';
                 rowClass = 'hawl-start';
             } else {
-                hawlState.monthsCount++;
-
-                if (hawlState.monthsCount >= 12) {
-                    zakat = total * 0.025;
+                // Track minimum wealth during Hawl period
+                hawlState.minWealth = Math.min(hawlState.minWealth, total);
+                
+                // Fixed: Parse current Hijri date components correctly as YEAR/MONTH
+                const [currentYear, currentMonth] = hijriDate.split('/').map(Number);
+                
+                // Calculate full lunar year (12 months)
+                const yearDiff = currentYear - hawlState.startHijriYear;
+                const monthDiff = currentMonth - hawlState.startHijriMonth;
+                const totalMonthsElapsed = (yearDiff * 12) + monthDiff;
+                
+                if (totalMonthsElapsed >= 12) {
+                    // Calculate Zakat based on minimum wealth during Hawl
+                    zakat = hawlState.minWealth * 0.025;
                     note = `hawl-complete-zakat-due ${hawlState.startDate}`;
                     rowClass = 'zakat-due';
-
-                    hawlState.isActive = false;
-                    hawlState.startDate = null;
-                    hawlState.monthsCount = 0;
+                    
+                    // Reset Hawl state with current values
+                    hawlState.startHijriDate = hijriDate;
+                    hawlState.startDate = gregorianDate;
+                    hawlState.startHijriYear = currentYear;
+                    hawlState.startHijriMonth = currentMonth;
+                    hawlState.wealthAtStart = total;
+                    hawlState.minWealth = total;
                 } else {
                     note = 'hawl-continues';
                 }
             }
         } else {
+            // Below Nisab
+            if (hawlState.isActive) {
+                note = 'hawl-broken-below-nisab';
+                rowClass = 'hawl-broken';
+            } else {
+                note = 'below-nisab';
+                rowClass = 'below-nisab';
+            }
+            
+            // Reset Hawl state
             hawlState.isActive = false;
+            hawlState.startHijriDate = null;
             hawlState.startDate = null;
-            hawlState.monthsCount = 0;
-            note = 'below-nisab';
-            rowClass = 'below-nisab';
+            hawlState.wealthAtStart = 0;
+            hawlState.minWealth = Infinity;
+            hawlState.startHijriMonth = 0;
+            hawlState.startHijriYear = 0;
         }
 
-        return {note, zakat, rowClass};
+        return { note, zakat, rowClass };
+    }
+
+    roundToTwoDecimals(value) {
+        return Math.round(value * 100) / 100;
     }
 }

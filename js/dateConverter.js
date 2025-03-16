@@ -1,6 +1,9 @@
 import { CacheManager } from './cacheManager.js';
 
 export class DateConverter {
+    static API_ENDPOINT = 'https://api.aladhan.com/v1/gToH';
+    static MAX_RETRIES = 2;
+
     constructor() {
         this.cacheManager = new CacheManager(
             'hijriCache',
@@ -8,11 +11,10 @@ export class DateConverter {
             (data) => new Map(data)
         );
         this.hijriDateCache = this.cacheManager.load(new Map());
-
-        // Add rate limiting properties
+        this.pendingRequests = new Set();
+        
         this.requestQueue = [];
-        this.isProcessingQueue = false;
-        this.requestDelay = 1000; // 1 second between requests
+        this.isProcessing = false;
     }
 
     async getHijriDate(gregDate) {
@@ -20,54 +22,76 @@ export class DateConverter {
             return this.hijriDateCache.get(gregDate);
         }
 
-        // Return a promise that will be resolved when the request is processed
-        return new Promise((resolve) => {
-            this.requestQueue.push({ gregDate, resolve });
+        if (this.pendingRequests.has(gregDate)) {
+            return new Promise(resolve => {
+                this.requestQueue.push({ gregDate, resolve, retries: 0 });
+            });
+        }
+
+        this.pendingRequests.add(gregDate);
+        return new Promise(resolve => {
+            this.requestQueue.push({ gregDate, resolve, retries: 0 });
             this.processQueue();
         });
     }
 
     async processQueue() {
-        // If already processing requests, just return
-        if (this.isProcessingQueue) return;
-
-        this.isProcessingQueue = true;
+        if (this.isProcessing) return;
+        this.isProcessing = true;
 
         while (this.requestQueue.length > 0) {
-            const { gregDate, resolve } = this.requestQueue.shift();
-
-            // Check cache again in case it was populated by a previous request
-            if (this.hijriDateCache.has(gregDate)) {
-                resolve(this.hijriDateCache.get(gregDate));
-                continue;
-            }
-
+            const request = this.requestQueue.shift();
+            
             try {
-                const [month, year] = gregDate.split('/');
-                const response = await fetch(
-                    `https://api.aladhan.com/v1/gToH/01-${month.padStart(2, '0')}-${year}`
-                );
-                const data = await response.json();
-
-                if (data.code === 200) {
-                    const hijriDate = data.data.hijri.date.split('-').slice(1).reverse().join('/');
-                    this.hijriDateCache.set(gregDate, hijriDate);
-                    this.cacheManager.save([...this.hijriDateCache.entries()]);
-                    resolve(hijriDate);
-                } else {
-                    resolve('N/A');
-                }
+                const result = await this.fetchWithRetry(request.gregDate, request.retries);
+                request.resolve(result);
             } catch (error) {
-                console.error("Hijri date conversion failed:", error);
-                resolve('Error');
-            }
-
-            // Wait before processing next request if queue is not empty
-            if (this.requestQueue.length > 0) {
-                await new Promise(r => setTimeout(r, this.requestDelay));
+                if (request.retries < DateConverter.MAX_RETRIES) {
+                    const retryDelay = 1000 * Math.pow(2, request.retries);
+                    await new Promise(r => setTimeout(r, retryDelay));
+                    request.retries++;
+                    this.requestQueue.unshift(request);
+                } else {
+                    request.resolve('N/A');
+                    this.pendingRequests.delete(request.gregDate);
+                }
             }
         }
 
-        this.isProcessingQueue = false;
+        this.isProcessing = false;
+    }
+
+    async fetchWithRetry(gregDate, retryCount = 0) {
+        try {
+            const [month, year] = gregDate.split('/');
+            const params = new URLSearchParams({
+                date: `01-${month.padStart(2, '0')}-${year}`
+            });
+
+            const response = await fetch(`${DateConverter.API_ENDPOINT}?${params}`, {
+                signal: AbortSignal.timeout(5000)
+            });
+
+            if (!response.ok) throw new Error('API request failed');
+            
+            const data = await response.json();
+            return this.handleApiResponse(gregDate, data);
+        } catch (error) {
+            if (retryCount < DateConverter.MAX_RETRIES) throw error;
+            return 'N/A';
+        }
+    }
+
+    handleApiResponse(gregDate, data) {
+        if (data.code === 200) {
+            const hijriDate = data.data.hijri.date
+                .split('-').slice(1).reverse().join('/');
+            
+            this.hijriDateCache.set(gregDate, hijriDate);
+            this.cacheManager.save([...this.hijriDateCache.entries()]);
+            this.pendingRequests.delete(gregDate);
+            return hijriDate;
+        }
+        throw new Error('Invalid API response');
     }
 }
