@@ -2,7 +2,7 @@ import translations from './translations.js';
 
 export class LanguageManager {
     constructor() {
-        this.currentLanguage = ['fr', 'ar', 'en'].includes(navigator.language.split('-')[0]) ? navigator.language.split('-')[0] : 'en';
+        this.currentLanguage = 'en';
     }
 
     changeLanguage(lang) {

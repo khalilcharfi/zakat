@@ -21,8 +21,15 @@ export class ZakatUIController {
     }
 
     setupEventListeners() {
-        document.getElementById('languageSelect').addEventListener('change',
-            (e) => this.changeLanguage(e.target.value));
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+            languageSelect.addEventListener('change', (e) => {
+                if (e && e.target && e.target.value) {
+                    this.changeLanguage(e.target.value);
+                }
+            });
+        }
+        
         document.querySelector('.file-upload button').addEventListener('click',
             () => this.processUploads());
 

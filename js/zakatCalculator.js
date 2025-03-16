@@ -161,7 +161,8 @@ export class ZakatCalculator {
 
                     if (hawlState.minWealth >= currentNisab) {
                         zakat = hawlState.minWealth * 0.025;
-                        note = `${this.languageManager.translate('hawl-complete-zakat-due')} ${hawlState.startDate}`;
+                        // Replace string concatenation with placeholder replacement
+                        note = this.languageManager.translate('hawl-complete-zakat-due').replace('{date}', hawlState.startDate);
                         rowClass = 'zakat-due';
                     } else {
                         note = 'hawl-complete-but-below-nisab';
