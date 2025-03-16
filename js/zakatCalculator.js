@@ -120,7 +120,7 @@ export class ZakatCalculator {
                 if (totalMonthsElapsed >= 12) {
                     // Calculate Zakat based on minimum wealth during Hawl
                     zakat = hawlState.minWealth * 0.025;
-                    note = `hawl-complete-zakat-due ${hawlState.startDate}`;
+                    note = `${this.languageManager.translate('hawl-complete-zakat-due')} ${hawlState.startDate}`;
                     rowClass = 'zakat-due';
                     
                     // Reset Hawl state with current values
