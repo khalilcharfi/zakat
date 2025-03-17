@@ -440,3 +440,7 @@ body[lang="ar"] .download-icon-container {
         padding-left: 0;
     }
 }
+
+summary {
+    text-align: start;
+}
