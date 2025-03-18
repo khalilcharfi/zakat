@@ -14,8 +14,8 @@
     "build-standalone": "./scripts/build-standalone.sh",
     "watch-and-serve": "rollup -c rollup.config.mjs -w & serve dist",
     "update-version": "node update-version.js",
-    "download-gold-data": "node scripts/download-gold-data.js",
-    "prebuild": "npm run update-version"
+    "prebuild": "npm run update-version",
+    "download-gold-data": "node scripts/download-gold-data.js"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -28,6 +28,7 @@
     "gh-pages": "^6.3.0",
     "micromatch": "^4.0.8",
     "npm-run-all": "^4.1.5",
+    "puppeteer": "^24.4.0",
     "readdirp": "^4.1.2",
     "rollup": "^4.35.0",
     "rollup-plugin-copy": "^3.5.0",
