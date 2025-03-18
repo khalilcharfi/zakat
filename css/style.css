@@ -71,24 +71,24 @@ tr:hover:not(.hawl-start):not(.zakat-due):not(.below-nisab):not(.hawl-continues)
 }
 
 /* Special row styling */
-tr.hawl-start {
+tr[data-row-class="hawl-start"], .hawl-start {
     background-color: #fff3cd;
 }
 
-tr.hawl-continues {
+tr[data-row-class="hawl-continues"], .hawl-continues {
     background-color: #f1f8e9;
 }
 
-tr.hawl-broken {
+tr[data-row-class="hawl-broken"],.hawl-broken {
     background-color: #ffebee;
 }
 
-tr.zakat-due {
+tr[data-row-class="zakat-due"], .zakat-due {
     background-color: #d4edda;
     font-weight: bold;
 }
 
-tr.below-nisab {
+tr[data-row-class="below-nisab"], .below-nisab {
     background-color: #f8d7da;
     color: #757575;
 }
