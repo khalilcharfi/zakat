@@ -38,7 +38,8 @@ export class ZakatUIController {
             filterToggle: document.getElementById('filterZakatToggle'),
             uploadButton: document.querySelector('.file-upload button'),
             fileInput: document.getElementById('dataUpload'),
-            apiNote: document.querySelector('.api-note')
+            apiNote: document.querySelector('.api-note'),
+            downloadLink: document.getElementById('downloadLink')
         };
     }
 
@@ -58,8 +59,46 @@ export class ZakatUIController {
         this.domElements.filterToggle?.addEventListener('change',
             () => this.updateUI());
         
+        // Add download link event listener
+        this.domElements.downloadLink?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.downloadExampleJSON();
+        });
+        
         // Optimize event delegation with a single listener
         document.addEventListener('click', this.handleAddRowInteractions.bind(this));
+    }
+
+    // Add a new method to handle the JSON download
+    async downloadExampleJSON() {
+        try {
+            const response = await fetch('https://raw.githubusercontent.com/khalilcharfi/zakat/refs/heads/main/data.json');
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch example data: ${response.status}`);
+            }
+            
+            const jsonData = await response.json();
+            const dataStr = JSON.stringify(jsonData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            // Create a download link and trigger it
+            const url = URL.createObjectURL(dataBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'data.json';
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        } catch (error) {
+            console.error('Error downloading example JSON:', error);
+            alert(this.languageManager.translate('download-error') || 'Error downloading example file. Please try again.');
+        }
     }
 
     // Separate method for better organization and testability

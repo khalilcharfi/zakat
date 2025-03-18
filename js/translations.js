@@ -37,6 +37,7 @@ const translations = {
         'cancel': 'Cancel',
         'showing_entries': 'Showing _START_ to _END_ of _TOTAL_ records',
         'showing_0_entries': 'Showing 0 to 0 of 0 records',
+        "download-error":  "Error downloading example file. Please try again."
     },
     fr: {
         'filter-zakat-due': 'Afficher uniquement les lignes avec une date d\'échéance ou un zakat éligible',
@@ -73,7 +74,8 @@ const translations = {
         'invalid-amount': 'Le montant doit être supérieur à zéro',
         'invalid-interest': 'L\'intérêt doit être zéro ou plus',
         'save': 'Enregistrer',
-        'cancel': 'Annuler'
+        'cancel': 'Annuler',
+        "download-error": "Erreur lors du téléchargement du fichier d'exemple. Veuillez réessayer."
     },
     ar: {
         'filter-zakat-due': 'عرض الصفوف التي تحتوي على تاريخ استحقاق أو زكاة مستحقة فقط',
@@ -105,8 +107,7 @@ const translations = {
         'upload-section-title': 'تحميل البيانات المالية',
         'example-format-summary': 'عرض نموذج التنسيق',
         'upload-data-prompt': 'يرجى تحميل ملف البيانات المالية لبدء الحسابات.',
-        // Add this to your translations object if not already present
-        'error-adding-row': 'Error adding new row. Please try again.',
+        "download-error": "خطأ في تنزيل ملف المثال. يرجى المحاولة مرة أخرى"
     }
 };
 
