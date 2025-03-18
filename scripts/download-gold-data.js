@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import puppeteer from 'puppeteer';
 import os from 'os';
+import { exec } from 'child_process';
 
 // Get current directory in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -53,12 +54,19 @@ const getMaxMemory = () => {
 const maxMemory = getMaxMemory();
 console.log(`Setting Node.js memory limit to ${maxMemory} MB`);
 
+// Sample data to use as fallback
+const sampleGoldPriceData = [
+];
+
 // Function to execute the Node.js script with the dynamically calculated memory size
 const runScript = async () => {
   let browser;
   try {
+    // Check if running in GitHub Actions
+    const isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
+    
     // Launch puppeteer with enhanced settings to bypass Cloudflare
-    browser = await puppeteer.launch({
+    const launchOptions = {
       headless: true,
       slowMo: 300,
       args: [
@@ -80,7 +88,15 @@ const runScript = async () => {
       ],
       defaultViewport: null,
       ignoreHTTPSErrors: true, // Ignore HTTPS errors
-    });
+    };
+    
+    // Add special options for GitHub Actions
+    if (isGitHubActions) {
+      console.log('Running in GitHub Actions environment');
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
+    }
+    
+    browser = await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
     
@@ -234,9 +250,21 @@ const runScript = async () => {
   } catch (error) {
     console.error('Error fetching gold price data:', error);
     console.log('Using fallback sample data instead');
-    saveAsJSON(goldPriceData, path.join(dataDir, 'gold-price-data.json'));
+    
+    // Add metadata to the fallback data
+    const fallbackWithMetadata = {
+      metadata: {
+        source: "Fallback Sample Data",
+        retrievedAt: new Date().toISOString(),
+        reason: "Failed to fetch live data: " + error.message,
+        dataPoints: sampleGoldPriceData.length
+      },
+      data: sampleGoldPriceData
+    };
+    
+    saveAsJSON(fallbackWithMetadata, goldDataPath);
     await wait(5000);
-    return goldPriceData;
+    return sampleGoldPriceData;
   } finally {
     if (browser) {
       await browser.close();
