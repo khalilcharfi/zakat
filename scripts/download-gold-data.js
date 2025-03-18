@@ -31,6 +31,7 @@ try {
     const lastRecordDate = new Date(lastRecord.date);
     const today = new Date();
     if (lastRecordDate.toDateString() === today.toDateString()) {
+      console.log('Gold price data already up-to-date');
       console.log(`Latest gold price for today (${today.toDateString()}):`);
       console.log(`Price: ${lastRecord.price} ${lastRecord.currency}`);
       process.exit(0);
