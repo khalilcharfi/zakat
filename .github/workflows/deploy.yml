@@ -33,67 +33,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          npm ci
-          # Install Chromium dependencies for Puppeteer in Ubuntu
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            libgbm-dev \
-            libasound2-dev \
-            libatk1.0-0 \
-            libatk-bridge2.0-0 \
-            libcups2 \
-            libdbus-1-3 \
-            libdrm2 \
-            libexpat1 \
-            libfontconfig1 \
-            libglib2.0-0 \
-            libnspr4 \
-            libnss3 \
-            libpango-1.0-0 \
-            libpangocairo-1.0-0 \
-            libx11-6 \
-            libx11-xcb1 \
-            libxcb1 \
-            libxcomposite1 \
-            libxdamage1 \
-            libxext6 \
-            libxfixes3 \
-            libxrandr2 \
-            libxrender1 \
-            libxshmfence1 \
-            libxtst6 \
-            fonts-liberation \
-            xdg-utils \
-            wget \
-            ca-certificates
+        run: npm install
 
       - name: Fetch Gold Prices
-        run: |
-          # Try to download gold data, but continue even if it fails
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm run download-gold-data || true
-          
-          # Check if gold data file exists and has content
-          if [ ! -s "data/gold-price-data.json" ]; then
-            echo "Creating fallback gold price data..."
-            mkdir -p data
-            cat > data/gold-price-data.json << 'EOF'
-            {
-              "metadata": {
-                "source": "Fallback Sample Data",
-                "retrievedAt": "2025-03-19T00:00:00.000Z",
-                "reason": "Failed to fetch live data in GitHub Actions",
-                "dataPoints": 4
-              },
-              "data": [
-               
-              ]
-            }
-            EOF
-            echo "Created fallback gold price data file"
-          else
-            echo "Gold price data file exists, continuing with build"
-          fi
+        run: npm run download-gold-data
 
       - name: Build project
         run: npm run build
