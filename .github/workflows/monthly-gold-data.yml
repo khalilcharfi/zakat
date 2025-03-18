@@ -1,0 +1,103 @@
+name: Monthly Gold Data Update
+
+on:
+  schedule:
+    # Run at 00:00 on the 1st day of each month
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+    # Allow manual triggering
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  update-gold-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10  # Prevent long-running jobs
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1  # Shallow clone for faster checkout
+          ref: main  # Explicitly checkout the main branch
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+      
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        run: npm install
+
+      - name: Fetch Gold Prices
+        run: npm run download-gold-data
+        id: download
+      
+      - name: Commit and push if changes
+        id: auto-commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Update gold price data for $(date +'%B %Y')"
+          file_pattern: data/gold-price-data.json
+          commit_user_name: GitHub Actions Bot
+          commit_user_email: actions@github.com
+          commit_author: GitHub Actions Bot <actions@github.com>
+          push_options: '--force'
+          branch: main  # Explicitly push to main branch
+
+      - name: Build project
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Report deployment status
+        if: always()
+        run: |
+          if [ "${{ steps.deployment.outcome }}" == "success" ]; then
+            echo "✅ Deployment successful - site available at: ${{ steps.deployment.outputs.page_url }}"
+            echo "✅ Gold price data updated in main branch: ${{ steps.auto-commit.outputs.commit_hash }}"
+          else
+            echo "❌ Deployment failed"
+            exit 1
+          fi
+      
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Gold data update failed',
+              body: 'The monthly gold data update workflow failed. Please check the logs: ' +
+                    'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            })
