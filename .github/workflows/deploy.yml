@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Fetch Gold Prices
+        run: npm run fetch-gold-prices
+
       - name: Build project
         run: npm run build
 
