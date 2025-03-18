@@ -29,6 +29,14 @@ const translations = {
         'upload-section-title': 'Upload Financial Data',
         'example-format-summary': 'Show Example Format',
         'upload-data-prompt': 'Please upload your financial data file to begin calculations.',
+        'add-new-entry': 'Add New Entry',
+        'invalid-date': 'Invalid date format (MM/YYYY)',
+        'invalid-amount': 'Amount must be greater than zero',
+        'invalid-interest': 'Interest must be zero or greater',
+        'save': 'Save',
+        'cancel': 'Cancel',
+        'showing_entries': 'Showing _START_ to _END_ of _TOTAL_ records',
+        'showing_0_entries': 'Showing 0 to 0 of 0 records',
     },
     fr: {
         'filter-zakat-due': 'Afficher uniquement les lignes avec une date d\'échéance ou un zakat éligible',
@@ -60,6 +68,12 @@ const translations = {
         'upload-section-title': 'Télécharger les données financières',
         'example-format-summary': "Afficher l'exemple de format",
         'upload-data-prompt': 'Veuillez télécharger votre fichier de données financières pour commencer les calculs.',
+        'add-new-entry': 'Ajouter une nouvelle entrée',
+        'invalid-date': 'Format de date invalide (MM/AAAA)',
+        'invalid-amount': 'Le montant doit être supérieur à zéro',
+        'invalid-interest': 'L\'intérêt doit être zéro ou plus',
+        'save': 'Enregistrer',
+        'cancel': 'Annuler'
     },
     ar: {
         'filter-zakat-due': 'عرض الصفوف التي تحتوي على تاريخ استحقاق أو زكاة مستحقة فقط',
@@ -91,7 +105,8 @@ const translations = {
         'upload-section-title': 'تحميل البيانات المالية',
         'example-format-summary': 'عرض نموذج التنسيق',
         'upload-data-prompt': 'يرجى تحميل ملف البيانات المالية لبدء الحسابات.',
-
+        // Add this to your translations object if not already present
+        'error-adding-row': 'Error adding new row. Please try again.',
     }
 };
 

@@ -490,3 +490,263 @@ summary {
 .hawl-broken {
     background-color: #ffebee !important;
 }
+
+/* Add Row Button and Form Styles */
+.add-row-container {
+    margin: 20px 0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.add-row-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.add-row-button:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.add-row-button:active {
+    transform: translateY(0);
+}
+
+.add-row-button svg,
+.add-row-button i {
+    font-size: 16px;
+}
+
+.add-row-form {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.add-row-form.hidden {
+    display: none;
+}
+
+.add-row-form-title {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    color: #2c3e50;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    flex: 1 1 200px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input, 
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.form-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.save-row-button {
+    background-color: #28a745;
+    color: white;
+}
+
+.save-row-button:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.cancel-row-button {
+    background-color: #f8f9fa;
+    color: #555;
+    border: 1px solid #ced4da;
+}
+
+.cancel-row-button:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+}
+
+/* New row highlight animation */
+@keyframes highlight-new-row {
+    0% { background-color: rgba(52, 152, 219, 0.3); }
+    100% { background-color: transparent; }
+}
+
+.new-row-highlight {
+    animation: highlight-new-row 2s ease-out forwards;
+}
+
+/* Form validation styles */
+.form-group.error input {
+    border-color: #dc3545;
+}
+
+.form-group .error-message {
+    color: #dc3545;
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: none;
+}
+
+.form-group.error .error-message {
+    display: block;
+}
+
+/* RTL support for form elements */
+body[lang="ar"] .add-row-container {
+    justify-content: flex-start;
+}
+
+body[lang="ar"] .form-actions {
+    justify-content: flex-start;
+}
+
+body[lang="ar"] .add-row-button svg,
+body[lang="ar"] .add-row-button i {
+    margin-right: 0;
+    margin-left: 8px;
+}
+
+/* Responsive adjustments for the form */
+@media screen and (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-group {
+        flex: 1 1 100%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-actions button {
+        width: 100%;
+    }
+}
+
+/* DataTables Responsive styling */
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control {
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+}
+
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control:before {
+    top: 50%;
+    left: 5px;
+    height: 14px;
+    width: 14px;
+    margin-top: -7px;
+    display: block;
+    position: absolute;
+    color: white;
+    border: 2px solid white;
+    border-radius: 14px;
+    box-shadow: 0 0 3px #444;
+    box-sizing: content-box;
+    text-align: center;
+    text-indent: 0 !important;
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 14px;
+    content: '+';
+    background-color: #31b131;
+}
+
+table.dataTable.dtr-inline.collapsed > tbody > tr.parent > td.dtr-control:before,
+table.dataTable.dtr-inline.collapsed > tbody > tr.parent > th.dtr-control:before {
+    content: '-';
+    background-color: #d33333;
+}
+
+table.responsive-details {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+table.responsive-details td {
+    padding: 5px 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+table.responsive-details td:first-child {
+    font-weight: bold;
+    width: 30%;
+}
+
+@media screen and (max-width: 767px) {
+    div.dataTables_wrapper div.dataTables_length,
+    div.dataTables_wrapper div.dataTables_filter,
+    div.dataTables_wrapper div.dataTables_info,
+    div.dataTables_wrapper div.dataTables_paginate {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+}

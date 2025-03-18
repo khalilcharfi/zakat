@@ -15,10 +15,11 @@
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
     <link rel="manifest" href="img/site.webmanifest">
 
-    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <!-- DataTables Scroller CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/scroller/2.2.0/css/scroller.dataTables.min.css">
+    <!-- DataTables Responsive CSS - Add this -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
 
     <!-- CSS with fallback -->
     <link rel="stylesheet" href="css/style.css">
@@ -26,10 +27,13 @@
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RQQCLVB89Z"></script>
     <script>
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-RQQCLVB89Z');
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RQQCLVB89Z');
     </script>
+    <!-- Add this in the head section -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <div class="container">
@@ -60,17 +64,16 @@
                 <div id="fileFormatHelp" class="file-upload-info">
                     <p data-i18n="upload-format-info"></p>
                     <details class="file-upload-example">
-                        <summary >
+                        <summary>
                   <span class="content-container">
     <span class="summary-text" data-i18n="example-format-summary"></span>
     <span class="download-icon-container">
-<a href="https://raw.githubusercontent.com/khalilcharfi/zakat/refs/heads/main/data.json" download="data.json" target="_blank" id="downloadLink">
+<a href="https://raw.githubusercontent.com/khalilcharfi/zakat/refs/heads/main/data.json" download="data.json"
+   target="_blank" id="downloadLink">
    <img src="img/download-icon.webp" alt="Download example JSON"/>
 </a>
     </span>
 </span>
-
-
                         </summary>
 
                         <pre><code>
@@ -145,13 +148,20 @@
     </footer>
 </div>
 
-<!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<!-- DataTables JS -->
+
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<!-- DataTables Scroller JS -->
+
 <script src="https://cdn.datatables.net/scroller/2.2.0/js/dataTables.scroller.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/moment-hijri@3.0.0/moment-hijri.min.js"></script>
 
 <script type="module" src="js/app.js"></script>
 </body>
 </html>
+
+<button class="add-row-button" aria-label="Add new entry">
+    <i class="fa fa-plus" aria-hidden="true"></i> Add New Entry
+</button>

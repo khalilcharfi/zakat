@@ -80,7 +80,9 @@ export class DateConverter {
                     request.retries++;
                     this.requestQueue.unshift(request);
                 } else {
-                    request.resolve('N/A');
+                    // Use moment-hijri as a fallback
+                    const hijriDate = moment(gregDate, 'MM/YYYY').format('iMM/iYYYY');
+                    request.resolve(hijriDate);
                     this.pendingRequests.delete(request.gregDate);
                     // Cache failed request
                     this.failedRequestsCache.set(request.gregDate, {
@@ -127,7 +129,8 @@ export class DateConverter {
                 await new Promise(r => setTimeout(r, delay));
                 return this.fetchWithRetry(gregDate, retryCount + 1);
             }
-            return 'N/A';
+            // Use moment-hijri as a fallback
+            return moment(gregDate, 'MM/YYYY').format('iMM/iYYYY');
         }
     }
 
