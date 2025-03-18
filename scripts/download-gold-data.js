@@ -3,22 +3,40 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import puppeteer from 'puppeteer';
 import os from 'os';
-import { exec } from 'child_process';
 
 // Get current directory in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const dataDir = path.join(__dirname, '..', 'data');
+const goldDataPath = path.join(dataDir, 'gold-price-data.json');
 
 // Ensure data directory exists
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// Sample data to use as fallback
-const sampleGoldPriceData = [
-
+const goldPriceData = [
 ];
+
+try {
+  const data = JSON.parse(fs.readFileSync(goldDataPath, 'utf8'));
+
+  // Check if data is an array or has a 'data' property (in case it has metadata)
+  const goldPrices = Array.isArray(data) ? data : data.data || [];
+
+  if (goldPrices.length > 0) {
+    // Get the last record
+    const lastRecord = goldPrices[goldPrices.length - 1];
+    const lastRecordDate = new Date(lastRecord.date);
+    const today = new Date();
+    if (lastRecordDate.toDateString() === today.toDateString()) {
+      console.log(`Latest gold price for today (${today.toDateString()}):`);
+      console.log(`Price: ${lastRecord.price} ${lastRecord.currency}`);
+      process.exit(0);
+    }
+    } 
+} catch (error) {
+}
 
 // Helper function for waiting
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -39,8 +57,8 @@ console.log(`Setting Node.js memory limit to ${maxMemory} MB`);
 const runScript = async () => {
   let browser;
   try {
-    // Launch puppeteer with dynamic memory setting
-    const browser = await puppeteer.launch({
+    // Launch puppeteer with enhanced settings to bypass Cloudflare
+    browser = await puppeteer.launch({
       headless: true,
       slowMo: 300,
       args: [
@@ -52,30 +70,111 @@ const runScript = async () => {
         '--start-maximized',
         '--disable-web-security',
         '--allow-file-access-from-files',
-        '--enable-features=NetworkService'
+        '--enable-features=NetworkService',
+        '--disable-features=IsolateOrigins,site-per-process', // Helps with Cloudflare
+        '--disable-blink-features=AutomationControlled', // Hide automation
+        '--disable-infobars',
+        '--ignore-certificate-errors',
+        '--no-first-run',
+        '--no-default-browser-check'
       ],
       defaultViewport: null,
+      ignoreHTTPSErrors: true, // Ignore HTTPS errors
     });
 
     const page = await browser.newPage();
     
-    // Setting user agent
+    // Set more realistic user agent
     await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-    // Emulate browser environment
+    // Set extra HTTP headers to appear more like a real browser
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Upgrade-Insecure-Requests': '1',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1',
+      'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"macOS"'
+    });
+
+    // Enhanced browser environment emulation
     await page.evaluateOnNewDocument(() => {
+      // Override the 'webdriver' property
       Object.defineProperty(navigator, 'webdriver', { get: () => false });
+      
+      // Override the 'plugins' property
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [
+          { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer' },
+          { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai' },
+          { name: 'Native Client', filename: 'internal-nacl-plugin' }
+        ]
+      });
+      
+      // Add language property
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['en-US', 'en']
+      });
+      
+      // Add chrome property
       window.chrome = {
         runtime: {},
         loadTimes: function() {},
         csi: function() {},
-        app: {}
+        app: {},
+        webstore: {}
+      };
+      
+      // Add permissions property
+      const originalQuery = window.navigator.permissions.query;
+      window.navigator.permissions.query = (parameters) => (
+        parameters.name === 'notifications' ?
+          Promise.resolve({ state: Notification.permission }) :
+          originalQuery(parameters)
+      );
+      
+      // Add webGL vendor and renderer
+      const getParameter = WebGLRenderingContext.getParameter;
+      WebGLRenderingContext.prototype.getParameter = function(parameter) {
+        if (parameter === 37445) {
+          return 'Intel Inc.';
+        }
+        if (parameter === 37446) {
+          return 'Intel Iris OpenGL Engine';
+        }
+        return getParameter(parameter);
       };
     });
 
-    // Navigate to the target website
-    await page.goto('https://www.bullionbypost.eu/gold-price/10-year-gold-price-per-gram/', { waitUntil: 'networkidle2', timeout: 90000 });
+    // Add random mouse movements to appear more human-like
+    const addRandomMouseMovements = async () => {
+      const width = 1280;
+      const height = 800;
+      
+      for (let i = 0; i < 5; i++) {
+        const x = Math.floor(Math.random() * width);
+        const y = Math.floor(Math.random() * height);
+        await page.mouse.move(x, y);
+        await wait(Math.random() * 1000);
+      }
+    };
 
+    // Navigate to the target website with enhanced options
+    console.log('Navigating to BullionByPost...');
+    await page.goto('https://www.bullionbypost.eu/gold-price/10-year-gold-price-per-gram/', { 
+      waitUntil: 'networkidle2', 
+      timeout: 120000 // Increased timeout for Cloudflare challenges
+    });
+
+    // Simulate human-like behavior
+    await addRandomMouseMovements();
+    
     // Cookie consent handling
     try {
       await page.waitForSelector('#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll', { timeout: 10000 });
@@ -135,9 +234,9 @@ const runScript = async () => {
   } catch (error) {
     console.error('Error fetching gold price data:', error);
     console.log('Using fallback sample data instead');
-    saveAsJSON(sampleGoldPriceData, path.join(dataDir, 'gold-price-data.json'));
+    saveAsJSON(goldPriceData, path.join(dataDir, 'gold-price-data.json'));
     await wait(5000);
-    return sampleGoldPriceData;
+    return goldPriceData;
   } finally {
     if (browser) {
       await browser.close();
