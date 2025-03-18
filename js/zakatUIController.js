@@ -27,6 +27,112 @@ export class ZakatUIController {
         const browserLang = navigator.language.split('-')[0];
         const initialLang = ['fr', 'ar', 'en'].includes(browserLang) ? browserLang : 'en';
         this.languageManager.changeLanguage(initialLang);
+        
+        // Check for data in URL parameters
+        this.checkUrlForData();
+    }
+    
+    // Add method to check URL for data parameter
+    checkUrlForData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataParam = urlParams.get('data');
+        
+        if (dataParam) {
+            try {
+                // Try to decode and parse the data
+                const decodedData = decodeURIComponent(dataParam);
+                const jsonData = JSON.parse(decodedData);
+                
+                // Process the data
+                this.processJsonData(jsonData);
+            } catch (error) {
+                console.error('Error loading data from URL:', error);
+            }
+        }
+    }
+    
+    // Process JSON data from any source
+    processJsonData(data) {
+        try {
+            // Validate JSON structure
+            this.validateJsonData(data);
+
+            this.calculator.setMonthlyData(data.monthlyData);
+            this.nisabService.setNisabData(data.nisabData);
+
+            if (data.goldApiKey) {
+                this.nisabService.setApiKey(data.goldApiKey);
+            }
+
+            this.calculator.calculateZakat().then(zakatData => {
+                this.zakatData = zakatData;
+                this.updateUI();
+            });
+        } catch (error) {
+            this.showErrorState(error);
+        }
+    }
+
+    async processUploads() {
+        if (!this.domElements.fileInput?.files.length) return;
+
+        try {
+            this.showLoadingState();
+            const file = this.domElements.fileInput.files[0];
+            const data = JSON.parse(await file.text());
+
+            // Use the common method to process the data
+            this.processJsonData(data);
+        } catch (error) {
+            this.showErrorState(error);
+        }
+    }
+
+    downloadExampleJSON() {
+        // Create example data structure
+        const exampleData = {
+            monthlyData: [
+                { date: "01/2023", amount: 5000, interest: null },
+                { date: "02/2023", amount: 5200, interest: 10 },
+                { date: "03/2023", amount: 5300, interest: null }
+            ],
+            nisabData: {
+                "2023": 5200
+            },
+            goldApiKey: "YOUR_GOLD_API_KEY_HERE" // Optional
+        };
+        
+        // Convert to JSON string with pretty formatting
+        const jsonString = JSON.stringify(exampleData, null, 2);
+        
+        // Create a blob and download link
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create temporary link and trigger download
+        const tempLink = document.createElement('a');
+        tempLink.href = url;
+        tempLink.download = 'zakat_example.json';
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        
+        // Clean up
+        document.body.removeChild(tempLink);
+        URL.revokeObjectURL(url);
+        
+        // Show how to use URL parameter (add a small info message)
+        const infoMessage = document.createElement('div');
+        infoMessage.className = 'info-message';
+        infoMessage.textContent = this.languageManager.translate('url_param_info') || 
+            'Tip: You can share data via URL by adding ?data={"monthlyData":[...],"nisabData":{...}} to the URL';
+        
+        // Add to page and remove after 10 seconds
+        document.body.appendChild(infoMessage);
+        setTimeout(() => {
+            if (document.body.contains(infoMessage)) {
+                document.body.removeChild(infoMessage);
+            }
+        }, 10000);
     }
 
     cacheDOMElements() {
@@ -182,130 +288,8 @@ export class ZakatUIController {
         // Initialize DataTables with configuration
         this.initializeDataTable('zakatDataTable', true);
     }
-    
-    createAddRowContainer() {
-        const container = document.createElement('div');
-        container.className = 'add-row-container';
-        
-        const button = document.createElement('button');
-        button.className = 'add-row-button';
-        
-        const icon = document.createElement('i');
-        icon.className = 'fa fa-plus';
-        
-        button.append(icon, ' ', this.languageManager.translate('add-new-entry') || 'Add New Entry');
-        container.appendChild(button);
-        
-        return container;
-    }
-    
-    createAddRowForm() {
-        const form = document.createElement('div');
-        form.className = 'add-row-form hidden';
-        form.id = 'addRowForm';
-        
-        // Use document fragment to improve performance
-        const fragment = document.createDocumentFragment();
-        
-        const title = document.createElement('h3');
-        title.className = 'add-row-form-title';
-        title.textContent = this.languageManager.translate('add-new-entry') || 'Add New Entry';
-        fragment.appendChild(title);
-        
-        // Create form fields
-        const formRow = this.createFormRow();
-        fragment.appendChild(formRow);
-        
-        // Create action buttons
-        const formActions = this.createFormActions();
-        fragment.appendChild(formActions);
-        
-        form.appendChild(fragment);
-        return form;
-    }
-    
-    createFormRow() {
-        const formRow = document.createElement('div');
-        formRow.className = 'form-row';
-        
-        // Date field
-        formRow.appendChild(this.createFormGroup(
-            'newRowDate',
-            this.languageManager.translate('date') || 'Date',
-            'text',
-            '01/2023',
-            this.languageManager.translate('invalid-date') || 'Invalid date format',
-            true
-        ));
-        
-        // Amount field
-        formRow.appendChild(this.createFormGroup(
-            'newRowAmount',
-            this.languageManager.translate('amount') || 'Amount',
-            'number',
-            '1000.00',
-            this.languageManager.translate('invalid-amount') || 'Invalid amount',
-            true,
-            { step: '0.01', min: '0' }
-        ));
-        
-        // Interest field
-        formRow.appendChild(this.createFormGroup(
-            'newRowInterest',
-            this.languageManager.translate('interest') || 'Interest',
-            'number',
-            '0.00',
-            this.languageManager.translate('invalid-interest') || 'Invalid interest',
-            false,
-            { step: '0.01', min: '0', value: '0' }
-        ));
-        
-        return formRow;
-    }
-    
-    createFormGroup(id, label, type, placeholder, errorMessage, required, attributes = {}) {
-        const group = document.createElement('div');
-        group.className = 'form-group';
-        
-        const labelEl = document.createElement('label');
-        labelEl.setAttribute('for', id);
-        labelEl.textContent = `${label} ${type === 'text' ? '(MM/YYYY)' : '(€)'}`;
-        
-        const input = document.createElement('input');
-        input.id = id;
-        input.type = type;
-        input.placeholder = placeholder;
-        if (required) input.required = true;
-        
-        // Apply additional attributes
-        Object.entries(attributes).forEach(([key, value]) => {
-            input.setAttribute(key, value);
-        });
-        
-        const error = document.createElement('div');
-        error.className = 'error-message';
-        error.textContent = errorMessage;
-        
-        group.append(labelEl, input, error);
-        return group;
-    }
-    
-    createFormActions() {
-        const actions = document.createElement('div');
-        actions.className = 'form-actions';
-        
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'cancel-row-button';
-        cancelBtn.textContent = this.languageManager.translate('cancel') || 'Cancel';
-        
-        const saveBtn = document.createElement('button');
-        saveBtn.className = 'save-row-button';
-        saveBtn.textContent = this.languageManager.translate('save') || 'Save';
-        
-        actions.append(cancelBtn, saveBtn);
-        return actions;
-    }
-    
+
+    // Add the missing createZakatTable method
     createZakatTable(displayData) {
         const table = document.createElement('table');
         table.id = 'zakatDataTable';
@@ -331,9 +315,75 @@ export class ZakatUIController {
         
         return table;
     }
+    
+    // Add the missing downloadExampleJSON method
+    downloadExampleJSON() {
+        const downloadFile = (data, fileName) => {
+            const jsonString = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+    
+            const tempLink = document.createElement('a');
+            tempLink.href = url;
+            tempLink.download = fileName;
+            document.body.appendChild(tempLink);
+            tempLink.click();
+    
+            document.body.removeChild(tempLink);
+            URL.revokeObjectURL(url);
+        };
+    
+        // Fetch example data from GitHub repository
+        fetch('https://raw.githubusercontent.com/khalilcharfi/zakat/refs/heads/main/data.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(exampleData => {
+                downloadFile(exampleData, 'zakat_example.json');
+                
+                // Show how to use URL parameter (add a small info message)
+                const infoMessage = document.createElement('div');
+                infoMessage.className = 'info-message';
+                infoMessage.textContent = this.languageManager.translate('url_param_info') || 
+                    'Tip: You can share data via URL by adding ?data={"monthlyData":[...],"nisabData":{...}} to the URL';
+                
+                document.body.appendChild(infoMessage);
+                setTimeout(() => {
+                    if (document.body.contains(infoMessage)) {
+                        document.body.removeChild(infoMessage);
+                    }
+                }, 10000);
+            })
+            .catch(error => {
+                console.error('Error fetching example data:', error);
+                
+                // Fallback to hardcoded example if fetch fails
+                const fallbackData = {
+                    monthlyData: [
+                        { date: "01/2023", amount: 5000, interest: null },
+                        { date: "02/2023", amount: 5200, interest: 10 },
+                        { date: "03/2023", amount: 5300, interest: null }
+                    ],
+                    nisabData: {
+                        "2023": 5200
+                    },
+                    goldApiKey: "YOUR_GOLD_API_KEY_HERE" // Optional
+                };
+    
+                downloadFile(fallbackData, 'zakat_example.json');
+            });
+    }
 
     generateTableRows(data) {
-        return data.map(row => `
+        // Use document fragment for better performance when building rows
+        const fragment = document.createDocumentFragment();
+        const tempDiv = document.createElement('div');
+        
+        // Build HTML string for better performance than DOM manipulation
+        const rowsHTML = data.map(row => `
             <tr data-row-class="${row.rowClass}">
                 <td>${row.date}</td>
                 <td>${row.hijriDate}</td>
@@ -345,6 +395,8 @@ export class ZakatUIController {
                 <td data-i18n="${row.note}">${this.languageManager.translate(row.note).replace('{date}', row.date)}</td>     
             </tr>
         `).join('');
+        
+        return rowsHTML;
     }
 
     generateNisabTable() {
@@ -357,6 +409,9 @@ export class ZakatUIController {
         if (this.domElements.apiNote) {
             this.domElements.apiNote.style.display = nisabData.fromApi ? '' : 'none';
         }
+
+        // Create document fragment for better performance
+        const fragment = document.createDocumentFragment();
 
         // Create table with ID for DataTables
         const table = document.createElement('table');
@@ -383,7 +438,8 @@ export class ZakatUIController {
             <tbody>${rows}</tbody>
         `;
 
-        container.appendChild(table);
+        fragment.appendChild(table);
+        container.appendChild(fragment);
 
         // Initialize DataTables with configuration
         this.initializeDataTable('nisabDataTable', false);
