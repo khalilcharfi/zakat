@@ -5,44 +5,58 @@ import {ZakatCalculator} from './zakatCalculator.js';
 
 export class ZakatUIController {
     constructor() {
+        // Initialize services and dependencies
         this.languageManager = new LanguageManager();
         this.dateConverter = new DateConverter();
         this.nisabService = new NisabService();
-        this.calculator = new ZakatCalculator( this.languageManager, this.dateConverter, this.nisabService);
+        this.calculator = new ZakatCalculator(this.languageManager, this.dateConverter, this.nisabService);
         this.zakatData = [];
+        
+        // Cache DOM elements that are frequently accessed
+        this.domElements = {};
+        
         this.init();
     }
 
     init() {
+        // Cache DOM elements for better performance
+        this.cacheDOMElements();
         this.setupEventListeners();
-        this.languageManager.changeLanguage(['fr', 'ar', 'en'].includes(navigator.language.split('-')[0])
-            ? navigator.language.split('-')[0]
-            : 'en');
+        
+        // Set initial language based on browser preference
+        const browserLang = navigator.language.split('-')[0];
+        const initialLang = ['fr', 'ar', 'en'].includes(browserLang) ? browserLang : 'en';
+        this.languageManager.changeLanguage(initialLang);
+    }
+    
+    cacheDOMElements() {
+        // Cache frequently accessed DOM elements
+        this.domElements = {
+            zakatTable: document.getElementById('zakatTable'),
+            nisabTable: document.getElementById('nisabTable'),
+            languageSelect: document.getElementById('languageSelect'),
+            filterToggle: document.getElementById('filterZakatToggle'),
+            uploadButton: document.querySelector('.file-upload button'),
+            fileInput: document.getElementById('dataUpload'),
+            apiNote: document.querySelector('.api-note')
+        };
     }
 
     setupEventListeners() {
-        const languageSelect = document.getElementById('languageSelect');
-        if (languageSelect) {
-            languageSelect.addEventListener('change', (e) => {
-                if (e && e.target && e.target.value) {
+        // Use cached DOM elements and add event listeners
+        if (this.domElements.languageSelect) {
+            this.domElements.languageSelect.addEventListener('change', (e) => {
+                if (e?.target?.value) {
                     this.changeLanguage(e.target.value);
                 }
             });
         }
 
-        document.querySelector('.file-upload button').addEventListener('click',
+        this.domElements.uploadButton?.addEventListener('click', 
             () => this.processUploads());
 
-        document.getElementById('filterZakatToggle')?.addEventListener('change', (e) => {
-            const isChecked = e.target.checked;
-            document.getElementById('zakatTable')?.querySelectorAll('.row')?.forEach((row) => {
-                if (!isChecked) {
-                    row.classList.remove('hide');
-                } else if (!row.classList.contains('zakat-due')) {
-                    row.classList.add('hide');
-                }
-            });
-        });
+        this.domElements.filterToggle?.addEventListener('change', 
+            () => this.updateUI());
     }
 
     changeLanguage(lang) {
@@ -53,12 +67,11 @@ export class ZakatUIController {
     }
 
     async processUploads() {
-        const fileInput = document.getElementById('dataUpload');
-        if (!fileInput.files.length) return;
+        if (!this.domElements.fileInput?.files.length) return;
 
         try {
             this.showLoadingState();
-            const file = fileInput.files[0];
+            const file = this.domElements.fileInput.files[0];
             const data = JSON.parse(await file.text());
 
             // Validate JSON structure
@@ -80,10 +93,12 @@ export class ZakatUIController {
 
     // Add validation method
     validateJsonData(data) {
+        // Basic validation
         if (!data || typeof data !== 'object') {
             throw new Error('Invalid JSON format');
         }
 
+        // Check required data sections
         if (!data.monthlyData || !Array.isArray(data.monthlyData) || data.monthlyData.length === 0) {
             throw new Error('Missing or invalid monthly data');
         }
@@ -115,35 +130,54 @@ export class ZakatUIController {
 
     showLoadingState() {
         const loadingHTML = `<div class="loading">${this.languageManager.translate('loading')}</div>`;
-        document.getElementById('zakatTable').innerHTML = loadingHTML;
-        document.getElementById('nisabTable').innerHTML = loadingHTML;
+        this.domElements.zakatTable.innerHTML = loadingHTML;
+        this.domElements.nisabTable.innerHTML = loadingHTML;
     }
 
     showErrorState(error) {
         console.error('File processing error:', error);
         const errorMessage = this.languageManager.translate('error-loading-data');
         const errorHTML = `<p class="error">${errorMessage}</p>`;
-        document.getElementById('zakatTable').innerHTML = errorHTML;
-        document.getElementById('nisabTable').innerHTML = errorHTML;
+        this.domElements.zakatTable.innerHTML = errorHTML;
+        this.domElements.nisabTable.innerHTML = errorHTML;
     }
 
     generateZakatTable() {
-        const container = document.getElementById('zakatTable');
+        const container = this.domElements.zakatTable;
         container.innerHTML = '';
-
-        const isFiltered = document.getElementById('filterZakatToggle')?.checked || false;
-
-        // Filter data if the toggle is checked
+    
+        const isFiltered = this.domElements.filterToggle?.checked || false;
+    
+        // Filter data if the toggle is checked - use more efficient filtering
         const displayData = isFiltered
             ? this.zakatData.filter(row => row.zakat || row.note.includes('due'))
             : this.zakatData;
-
+    
+        // Create table with ID for DataTables
         const table = document.createElement('table');
+        table.id = 'zakatDataTable';
+        table.className = 'display';
+        
+        // Use template literals for better performance with large datasets
+        const headers = this.getTableHeaders().map(h => `<th>${h}</th>`).join('');
+        const rows = this.generateTableRows(displayData);
+        
         table.innerHTML = `
-        <tr>${this.getTableHeaders().map(h => `<th>${h}</th>`).join('')}</tr>
-
-        ${displayData.map(row => `
-            <tr class="row ${row.rowClass}">
+            <thead>
+                <tr>${headers}</tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        `;
+    
+        container.appendChild(table);
+        
+        // Initialize DataTables with configuration
+        this.initializeDataTable('zakatDataTable', true);
+    }
+    
+    generateTableRows(data) {
+        return data.map(row => `
+            <tr data-row-class="${row.rowClass}">
                 <td>${row.date}</td>
                 <td>${row.hijriDate}</td>
                 <td>${this.formatCurrency(row.amount)}</td>
@@ -152,45 +186,98 @@ export class ZakatUIController {
                 <td>${this.formatCurrency(row.nisab)}</td>
                 <td>${row.zakat ? this.formatCurrency(row.zakat) : '-'}</td>
                 <td data-i18n="${row.note}">${this.languageManager.translate(row.note).replace('{date}', row.date)}</td>     
-       </tr>
-        `).join('')}
-    `;
+            </tr>
+        `).join('');
+    }
 
+    generateNisabTable() {
+        const container = this.domElements.nisabTable;
+        container.innerHTML = '';
+    
+        const nisabData = this.nisabService.getNisabData();
+    
+        // Show/hide API note based on data source
+        if (this.domElements.apiNote) {
+            this.domElements.apiNote.style.display = nisabData.fromApi ? '' : 'none';
+        }
+    
+        // Create table with ID for DataTables
+        const table = document.createElement('table');
+        table.id = 'nisabDataTable';
+        table.className = 'display';
+        
+        const yearHeader = this.languageManager.translate('year');
+        const nisabHeader = this.languageManager.translate('nisab-eur');
+        
+        const rows = Object.entries(nisabData.data).map(([year, value]) => `
+            <tr>
+                <td>${year}</td>
+                <td>${this.formatCurrency(value)}</td>
+            </tr>
+        `).join('');
+        
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>${yearHeader}</th>
+                    <th>${nisabHeader}</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        `;
+    
         container.appendChild(table);
+        
+        // Initialize DataTables with configuration
+        this.initializeDataTable('nisabDataTable', false);
+    }
+    
+    initializeDataTable(tableId, isPaginated) {
+        $(document).ready(() => {
+            $(`#${tableId}`).DataTable({
+                responsive: true,
+                paging: isPaginated,
+                searching: false,  // Disable searching
+                ordering: false,   // Disable ordering/sorting
+                info: isPaginated,
+                stripe: false,     // Disable striping (even/odd rows)
+                // Enable scroller extension for infinite scroll (only for paginated tables)
+                scrollY: isPaginated ? '50vh' : '',
+                scrollCollapse: isPaginated,
+                scroller: isPaginated,
+                deferRender: isPaginated,
+                // Set page length options
+                lengthMenu: isPaginated ? [[25, 50, 100, -1], [25, 50, 100, this.languageManager.translate('all') || 'All']] : undefined,
+                language: this.getDataTableLanguage(),
+                // Apply row classes after DataTables processing
+                createdRow: function(row, data, dataIndex) {
+                    // Get the row class from the data-row-class attribute
+                    const rowClass = $(row).attr('data-row-class');
+                    if (rowClass) {
+                        $(row).addClass(rowClass);
+                    }
+                }
+            });
+        });
+    }
+    
+    getDataTableLanguage() {
+        return {
+            lengthMenu: this.languageManager.translate('show_entries') || 'Show _MENU_ entries',
+            info: this.languageManager.translate('showing_entries') || 'Showing _START_ to _END_ of _TOTAL_ entries',
+            infoEmpty: this.languageManager.translate('showing_0_entries') || 'Showing 0 to 0 of 0 entries',
+            paginate: {
+                first: this.languageManager.translate('first') || 'First',
+                last: this.languageManager.translate('last') || 'Last',
+                next: this.languageManager.translate('next') || 'Next',
+                previous: this.languageManager.translate('previous') || 'Previous'
+            }
+        };
     }
 
     getTableHeaders() {
         return ['date', 'hijri-date', 'amount', 'interest', 'total', 'nisab', 'zakat', 'notes']
             .map(key => this.languageManager.translate(key));
-    }
-
-    generateNisabTable() {
-        const container = document.getElementById('nisabTable');
-        container.innerHTML = '';
-
-        const nisabData = this.nisabService.getNisabData();
-
-        // Show/hide API note based on data source
-        const apiNoteElement = document.querySelector('.api-note');
-        if (apiNoteElement) {
-            apiNoteElement.style.display = nisabData.fromApi ? '' : 'none';
-        }
-
-        const table = document.createElement('table');
-        table.innerHTML = `
-            <tr>
-                <th>${this.languageManager.translate('year')}</th>
-                <th>${this.languageManager.translate('nisab-eur')}</th>
-            </tr>
-            ${Object.entries(nisabData.data).map(([year, value]) => `
-                <tr>
-                    <td>${year}</td>
-                    <td>${this.formatCurrency(value)}</td>
-                </tr>
-            `).join('')}
-        `;
-
-        container.appendChild(table);
     }
 
     formatCurrency(value) {

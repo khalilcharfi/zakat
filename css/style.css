@@ -444,3 +444,49 @@ body[lang="ar"] .download-icon-container {
 summary {
     text-align: start;
 }
+
+/* DataTables styling integration */
+.dataTables_wrapper {
+    padding: 1rem 0;
+}
+  
+.dataTables_filter input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+}
+  
+.dataTables_paginate .paginate_button {
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+  
+.dataTables_paginate .paginate_button.current {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+/* Ensure special row styling takes precedence */
+.zakat-due {
+    background-color: #d4edda !important;
+}
+
+.hawl-start {
+    background-color: #fff3cd !important;
+}
+
+.below-nisab {
+    background-color: #f8d7da !important;
+}
+
+.hawl-continues {
+    background-color: #f1f8e9 !important;
+}
+
+.hawl-broken {
+    background-color: #ffebee !important;
+}
