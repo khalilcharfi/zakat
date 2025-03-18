@@ -17,7 +17,7 @@ export default {
                 { src: 'img/**/*', dest: 'dist/img' },
                 { src: 'css/**/*', dest: 'dist/css' },
                 { src: 'js/**/*', dest: 'dist/js' },
-                { src: 'data/**/*', dest: 'data/js' }
+                { src: 'data/**/*', dest: 'dist/data' }
             ]
         })
     ]
