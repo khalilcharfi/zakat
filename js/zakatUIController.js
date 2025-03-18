@@ -39,7 +39,15 @@ export class ZakatUIController {
             uploadButton: document.querySelector('.file-upload button'),
             fileInput: document.getElementById('dataUpload'),
             apiNote: document.querySelector('.api-note'),
-            downloadLink: document.getElementById('downloadLink')
+            downloadLink: document.getElementById('downloadLink'),
+            // Add references to the form elements
+            addRowForm: document.getElementById('addRowForm'),
+            addRowButton: document.querySelector('.add-row-button'),
+            saveRowButton: document.querySelector('.save-row-button'),
+            cancelRowButton: document.querySelector('.cancel-row-button'),
+            newRowDate: document.getElementById('newRowDate'),
+            newRowAmount: document.getElementById('newRowAmount'),
+            newRowInterest: document.getElementById('newRowInterest')
         };
     }
 
@@ -65,54 +73,10 @@ export class ZakatUIController {
             this.downloadExampleJSON();
         });
         
-        // Optimize event delegation with a single listener
-        document.addEventListener('click', this.handleAddRowInteractions.bind(this));
-    }
-
-    // Add a new method to handle the JSON download
-    async downloadExampleJSON() {
-        try {
-            const response = await fetch('https://raw.githubusercontent.com/khalilcharfi/zakat/refs/heads/main/data.json');
-            
-            if (!response.ok) {
-                throw new Error(`Failed to fetch example data: ${response.status}`);
-            }
-            
-            const jsonData = await response.json();
-            const dataStr = JSON.stringify(jsonData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            
-            // Create a download link and trigger it
-            const url = URL.createObjectURL(dataBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'data.json';
-            document.body.appendChild(a);
-            a.click();
-            
-            // Clean up
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
-        } catch (error) {
-            console.error('Error downloading example JSON:', error);
-            alert(this.languageManager.translate('download-error') || 'Error downloading example file. Please try again.');
-        }
-    }
-
-    // Separate method for better organization and testability
-    handleAddRowInteractions(e) {
-        const target = e.target.closest('.add-row-button, .save-row-button, .cancel-row-button');
-        if (!target) return;
-        
-        if (target.classList.contains('add-row-button')) {
-            this.showAddRowForm();
-        } else if (target.classList.contains('save-row-button')) {
-            this.saveNewRow();
-        } else if (target.classList.contains('cancel-row-button')) {
-            this.hideAddRowForm();
-        }
+        // Add form-related event listeners directly to the cached elements
+        this.domElements.addRowButton?.addEventListener('click', () => this.showAddRowForm());
+        this.domElements.saveRowButton?.addEventListener('click', () => this.saveNewRow());
+        this.domElements.cancelRowButton?.addEventListener('click', () => this.hideAddRowForm());
     }
 
     changeLanguage(lang) {
@@ -209,19 +173,16 @@ export class ZakatUIController {
             ? this.zakatData.filter(row => row.zakat || row.note.includes('due'))
             : this.zakatData;
     
-        // Create elements once and append in batches for better performance
-        const addRowContainer = this.createAddRowContainer();
-        const addRowForm = this.createAddRowForm();
+        // Create table with data
         const table = this.createZakatTable(displayData);
         
-        // Append all elements at once to minimize DOM reflows
-        container.append(addRowContainer, addRowForm, table);
+        // Append table to container
+        container.appendChild(table);
         
         // Initialize DataTables with configuration
         this.initializeDataTable('zakatDataTable', true);
     }
     
-    // Helper methods for better organization and reusability
     createAddRowContainer() {
         const container = document.createElement('div');
         container.className = 'add-row-container';
@@ -498,111 +459,105 @@ export class ZakatUIController {
         return value ? `€${Number(value).toFixed(2)}` : '-';
     }
     
-    // Move these methods inside the class
+    // Show/hide form methods
     showAddRowForm() {
-        const form = document.getElementById('addRowForm');
-        if (form) {
-            form.classList.remove('hidden');
+        if (this.domElements.addRowForm) {
+            this.domElements.addRowForm.classList.remove('hidden');
         }
     }
-
+    
     hideAddRowForm() {
-        const form = document.getElementById('addRowForm');
-        if (form) {
-            form.classList.add('hidden');
+        if (this.domElements.addRowForm) {
+            this.domElements.addRowForm.classList.add('hidden');
             // Reset form fields
-            form.querySelectorAll('input').forEach(input => {
-                input.value = '';
-                input.parentElement.classList.remove('error');
-            });
+            this.resetFormFields();
         }
     }
-
-    validateNewRowData() {
-        let isValid = true;
-        const dateInput = document.getElementById('newRowDate');
-        const amountInput = document.getElementById('newRowAmount');
-        const interestInput = document.getElementById('newRowInterest');
+    
+    resetFormFields() {
+        if (this.domElements.newRowDate) this.domElements.newRowDate.value = '';
+        if (this.domElements.newRowAmount) this.domElements.newRowAmount.value = '';
+        if (this.domElements.newRowInterest) this.domElements.newRowInterest.value = '0';
         
-        if (!dateInput || !amountInput || !interestInput) return false;
-        
-        // Validate date format (MM/YYYY)
-        const dateRegex = /^(0[1-9]|1[0-2])\/\d{4}$/;
-        if (!dateRegex.test(dateInput.value)) {
-            dateInput.parentElement.classList.add('error');
-            isValid = false;
-        } else {
-            dateInput.parentElement.classList.remove('error');
-        }
-        
-        // Validate amount (must be a positive number)
-        if (isNaN(amountInput.value) || parseFloat(amountInput.value) <= 0) {
-            amountInput.parentElement.classList.add('error');
-            isValid = false;
-        } else {
-            amountInput.parentElement.classList.remove('error');
-        }
-        
-        // Validate interest (must be a non-negative number)
-        if (isNaN(interestInput.value) || parseFloat(interestInput.value) < 0) {
-            interestInput.parentElement.classList.add('error');
-            isValid = false;
-        } else {
-            interestInput.parentElement.classList.remove('error');
-        }
-        
-        return isValid;
+        // Remove any error classes
+        document.querySelectorAll('#addRowForm .form-group').forEach(group => {
+            group.classList.remove('error');
+        });
     }
-
-    async saveNewRow() {
-        if (!this.validateNewRowData()) {
+    
+    saveNewRow() {
+        // Validate form inputs
+        if (!this.validateForm()) {
             return;
         }
         
-        const dateInput = document.getElementById('newRowDate');
-        const amountInput = document.getElementById('newRowAmount');
-        const interestInput = document.getElementById('newRowInterest');
+        // Get values from form
+        const date = this.domElements.newRowDate.value;
+        const amount = parseFloat(this.domElements.newRowAmount.value);
+        const interest = parseFloat(this.domElements.newRowInterest.value) || 0;
         
-        // Create new entry
-        const newEntry = {
-            date: dateInput.value,
-            amount: parseFloat(amountInput.value),
-            interest: parseFloat(interestInput.value) || 0
-        };
+        // Add new entry to monthly data
+        const newEntry = { date, amount, interest: interest > 0 ? interest : null };
+        const currentData = this.calculator.getMonthlyData();
+        currentData.push(newEntry);
         
-        try {
-            // Add to monthly data
-            this.calculator.monthlyData.push(newEntry);
-            
-            // Recalculate zakat
-            this.zakatData = await this.calculator.calculateZakat();
-            
-            // Update UI
+        // Sort data by date
+        currentData.sort((a, b) => {
+            const dateA = this.dateConverter.parseDate(a.date);
+            const dateB = this.dateConverter.parseDate(b.date);
+            return dateA - dateB;
+        });
+        
+        // Update calculator with new data
+        this.calculator.setMonthlyData(currentData);
+        
+        // Recalculate zakat and update UI
+        this.calculator.calculateZakat().then(data => {
+            this.zakatData = data;
             this.updateUI();
-            
-            // Hide form
             this.hideAddRowForm();
-            
-            // Highlight the new row
-            setTimeout(() => {
-                const table = document.getElementById('zakatDataTable');
-                if (table) {
-                    const rows = table.querySelectorAll('tbody tr');
-                    // Find the row with the matching date
-                    for (const row of rows) {
-                        const cells = row.querySelectorAll('td');
-                        if (cells.length > 0 && cells[0].textContent === newEntry.date) {
-                            row.classList.add('new-row-highlight');
-                            // Scroll to the row
-                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            break;
-                        }
-                    }
-                }
-            }, 100);
-        } catch (error) {
-            console.error('Error adding new row:', error);
-            alert(this.languageManager.translate('error-adding-row') || 'Error adding new row');
+        });
+    }
+    
+    validateForm() {
+        let isValid = true;
+        
+        // Validate date format (MM/YYYY)
+        const dateInput = this.domElements.newRowDate;
+        const dateGroup = dateInput.closest('.form-group');
+        const dateRegex = /^(0[1-9]|1[0-2])\/\d{4}$/;
+        
+        if (!dateRegex.test(dateInput.value)) {
+            dateGroup.classList.add('error');
+            isValid = false;
+        } else {
+            dateGroup.classList.remove('error');
         }
+        
+        // Validate amount (must be positive number)
+        const amountInput = this.domElements.newRowAmount;
+        const amountGroup = amountInput.closest('.form-group');
+        const amount = parseFloat(amountInput.value);
+        
+        if (isNaN(amount) || amount <= 0) {
+            amountGroup.classList.add('error');
+            isValid = false;
+        } else {
+            amountGroup.classList.remove('error');
+        }
+        
+        // Validate interest (must be non-negative number)
+        const interestInput = this.domElements.newRowInterest;
+        const interestGroup = interestInput.closest('.form-group');
+        const interest = parseFloat(interestInput.value) || 0;
+        
+        if (isNaN(interest) || interest < 0) {
+            interestGroup.classList.add('error');
+            isValid = false;
+        } else {
+            interestGroup.classList.remove('error');
+        }
+        
+        return isValid;
     }
 }
