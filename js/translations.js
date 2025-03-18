@@ -107,7 +107,8 @@ const translations = {
         'upload-section-title': 'تحميل البيانات المالية',
         'example-format-summary': 'عرض نموذج التنسيق',
         'upload-data-prompt': 'يرجى تحميل ملف البيانات المالية لبدء الحسابات.',
-        "download-error": "خطأ في تنزيل ملف المثال. يرجى المحاولة مرة أخرى"
+        "download-error": "خطأ في تنزيل ملف المثال. يرجى المحاولة مرة أخرى",
+        'add-new-entry': 'إضافة صف جديد'
     }
 };
 
