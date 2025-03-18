@@ -104,6 +104,40 @@
                     <span data-i18n="filter-zakat-due">Show only rows with due date or eligible zakat</span>
                 </label>
             </div>
+            
+            <!-- Add Row Button Container -->
+            <div class="add-row-container">
+                <button class="add-row-button">
+                    <i class="fa fa-plus"></i> <span data-i18n="add-new-entry">Add New Entry</span>
+                </button>
+            </div>
+            
+            <!-- Add Row Form - Moved from head to body -->
+            <div class="add-row-form hidden" id="addRowForm">
+              <h3 class="add-row-form-title" data-i18n="add-new-entry">Add New Entry</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="newRowDate"><span data-i18n="date">Date</span> (MM/YYYY)</label>
+                  <input id="newRowDate" type="text" placeholder="01/2023" required>
+                  <div class="error-message" data-i18n="invalid-date">Invalid date format (MM/YYYY)</div>
+                </div>
+                <div class="form-group currency-input">
+                  <label for="newRowAmount"><span data-i18n="amount">Amount</span> (€)</label>
+                  <input id="newRowAmount" type="number" placeholder="1000.00" required step="0.01" min="0">
+                  <div class="error-message" data-i18n="invalid-amount">Amount must be greater than zero</div>
+                </div>
+                <div class="form-group currency-input">
+                  <label for="newRowInterest"><span data-i18n="interest">Interest</span> (€)</label>
+                  <input id="newRowInterest" type="number" placeholder="0.00" step="0.01" min="0" value="0">
+                  <div class="error-message" data-i18n="invalid-interest">Interest must be zero or greater</div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="cancel-row-button" data-i18n="cancel">Cancel</button>
+                <button class="save-row-button" data-i18n="save">Save</button>
+              </div>
+            </div>
+            
             <div id="zakatTable" class="table-container" role="region"
                  aria-live="polite" aria-atomic="true">
                 <div class="loading" data-i18n="upload-data-prompt"></div>
