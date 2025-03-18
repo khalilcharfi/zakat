@@ -14,6 +14,7 @@
     "build-standalone": "./scripts/build-standalone.sh",
     "watch-and-serve": "rollup -c rollup.config.mjs -w & serve dist",
     "update-version": "node update-version.js",
+    "download-gold-data": "node scripts/download-gold-data.js",
     "prebuild": "npm run update-version"
   },
   "engines": {
