@@ -34,6 +34,8 @@
     </script>
     <!-- Add this in the head section -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add this before the closing </head> tag -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -53,7 +55,7 @@
             <div class="file-upload">
                 <div class="file-upload-inputs">
                     <div class="file-upload-input">
-                        <input type="file" id="dataUpload" accept=".json"
+                        <input type="file" id="dataUpload" accept=".json,.xlsx,.xls,.csv"
                                aria-describedby="fileFormatHelp"
                                aria-label="Upload financial data file">
                     </div>
@@ -63,16 +65,18 @@
                 </button>
                 <div id="fileFormatHelp" class="file-upload-info">
                     <p data-i18n="upload-format-info"></p>
+                    <p data-i18n="excel-upload-info"></p>
                     <details class="file-upload-example">
                         <summary>
-                  <span class="content-container">
-    <span class="summary-text" data-i18n="example-format-summary"></span>
-    <span class="download-icon-container">
-        <a href="#" id="downloadLink">
-            <img src="img/download-icon.webp" alt="Download example JSON"/>
-        </a>
-    </span>
-</span>
+                            <span class="content-container">
+                                <span class="summary-text" data-i18n="example-format-summary"></span>
+                                <span class="download-icon-container">
+                                    <a href="#" id="downloadLink" class="example-link">
+                                        <img src="img/download-icon.webp" alt="Download example JSON"/>
+                                    </a>
+                                    <a href="#" id="downloadExcelLink" class="example-link" data-i18n="download-excel-template"></a>
+                                </span>
+                            </span>
                         </summary>
 
                         <pre><code>

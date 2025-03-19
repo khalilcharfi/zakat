@@ -37,6 +37,9 @@ const translations = {
         'cancel': 'Cancel',
         'showing_entries': 'Showing _START_ to _END_ of _TOTAL_ records',
         'showing_0_entries': 'Showing 0 to 0 of 0 records',
+        "download-excel-template": 'Download Excel Template',
+        'excel-upload-info': 'You can also upload Excel files (.xlsx, .xls) with columns: Date, Amount, and Interest',
+        'excel-parsing-error': 'Error parsing Excel file. Please check the format.',
         "download-error":  "Error downloading example file. Please try again."
     },
     fr: {
@@ -107,8 +110,10 @@ const translations = {
         'upload-section-title': 'تحميل البيانات المالية',
         'example-format-summary': 'عرض نموذج التنسيق',
         'upload-data-prompt': 'يرجى تحميل ملف البيانات المالية لبدء الحسابات.',
-        "download-error": "خطأ في تنزيل ملف المثال. يرجى المحاولة مرة أخرى",
-        'add-new-entry': 'إضافة صف جديد'
+        ar: {
+            "download-error": "خطأ في تنزيل ملف المثال. يرجى المحاولة مرة أخرى",
+            'add-new-entry': 'إضافة صف جديد'
+        }
     }
 };
 

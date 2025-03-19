@@ -79,13 +79,160 @@ export class ZakatUIController {
         try {
             this.showLoadingState();
             const file = this.domElements.fileInput.files[0];
-            const data = JSON.parse(await file.text());
+            let data;
+            
+            // Check file extension to determine processing method
+            if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+                // Process Excel file
+                data = await this.convertExcelToJson(file);
+            } else if (file.name.toLowerCase().endsWith('.csv')) {
+                // Process CSV file
+                data = await this.convertCsvToJson(file);
+            } else {
+                // Process JSON file
+                data = JSON.parse(await file.text());
+            }
+            
+            // Validate JSON structure
+            this.validateJsonData(data);
 
-            // Use the common method to process the data
-            this.processJsonData(data);
+            this.calculator.setMonthlyData(data.monthlyData);
+            this.nisabService.setNisabData(data.nisabData);
+
+            if (data.goldApiKey) {
+                this.nisabService.setApiKey(data.goldApiKey);
+            }
+
+            this.zakatData = await this.calculator.calculateZakat();
+            this.updateUI();
         } catch (error) {
             this.showErrorState(error);
         }
+    }
+
+    // Add CSV conversion method
+    // Enhanced CSV conversion method with support for different separators
+    async convertCsvToJson(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                try {
+                    const csvData = e.target.result;
+                    
+                    // Detect the separator by analyzing the first few lines
+                    const separator = this.detectCsvSeparator(csvData);
+                    
+                    // Use XLSX library to parse CSV with the detected separator
+                    const workbook = XLSX.read(csvData, { 
+                        type: 'string',
+                        cellDates: false,
+                        // Set the detected separator
+                        FS: separator
+                    });
+                    
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    // Format data to match expected structure
+                    const monthlyData = jsonData.map(row => {
+                        return {
+                            date: row.Date || row.date,
+                            amount: Number(row.Amount || row.amount),
+                            interest: (row.Interest !== undefined ? Number(row.Interest) : 
+                                      (row.interest !== undefined ? Number(row.interest) : null))
+                        };
+                    });
+                    
+                    // Create a comprehensive nisab data object for all years in the data
+                    const nisabData = {};
+                    const defaultNisabValue = 5200; // Default value
+                    
+                    // Extract all years from the monthly data
+                    monthlyData.forEach(entry => {
+                        const [month, year] = entry.date.split('/');
+                        if (year && !nisabData[year]) {
+                            nisabData[year] = defaultNisabValue;
+                        }
+                    });
+                    
+                    // Ensure we have at least the current year if no data was found
+                    if (Object.keys(nisabData).length === 0) {
+                        const currentYear = new Date().getFullYear();
+                        nisabData[currentYear.toString()] = defaultNisabValue;
+                    }
+                    
+                    resolve({
+                        monthlyData: monthlyData,
+                        nisabData: nisabData
+                    });
+                } catch (error) {
+                    reject(new Error(`CSV parsing error: ${error.message}`));
+                }
+            };
+            
+            reader.onerror = () => reject(new Error('Error reading CSV file'));
+            reader.readAsText(file);
+        });
+    }
+    
+    // Helper method to detect CSV separator
+    detectCsvSeparator(csvData) {
+        // Get the first few lines to analyze
+        const lines = csvData.split('\n').slice(0, 5).filter(line => line.trim().length > 0);
+        if (lines.length === 0) return ','; // Default to comma if no lines
+        
+        // Common separators to check
+        const separators = [',', ';', '\t', '|'];
+        const counts = {};
+        
+        // Initialize counts
+        separators.forEach(sep => counts[sep] = 0);
+        
+        // Count occurrences of each separator in the first line
+        // We focus on the header line which should contain the separator
+        const headerLine = lines[0];
+        
+        separators.forEach(sep => {
+            // Count how many times this separator appears in the line
+            const count = (headerLine.match(new RegExp(sep === '\t' ? '\t' : `\\${sep}`, 'g')) || []).length;
+            counts[sep] = count;
+        });
+        
+        // Find the separator with the highest count
+        let maxCount = 0;
+        let detectedSeparator = ','; // Default to comma
+        
+        separators.forEach(sep => {
+            if (counts[sep] > maxCount) {
+                maxCount = counts[sep];
+                detectedSeparator = sep;
+            }
+        });
+        
+        return detectedSeparator;
+    }
+    
+    // Add CSV download method
+    downloadExampleCsv() {
+        // Create a new workbook
+        const wb = XLSX.utils.book_new();
+        
+        // Create data with your specified format
+        const exampleData = [
+            { Date: "08/2022", Amount: 1458, Interest: 5 },
+            { Date: "09/2022", Amount: 1500, Interest: 3 },
+            { Date: "10/2022", Amount: 1550, Interest: 0 }
+        ];
+        
+        // Create worksheet from data
+        const ws = XLSX.utils.json_to_sheet(exampleData);
+        
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, "Zakat Data");
+        
+        // Generate CSV file and trigger download
+        XLSX.writeFile(wb, "zakat_example_template.csv", { bookType: 'csv' });
     }
 
     downloadExampleJSON() {
@@ -146,6 +293,7 @@ export class ZakatUIController {
             fileInput: document.getElementById('dataUpload'),
             apiNote: document.querySelector('.api-note'),
             downloadLink: document.getElementById('downloadLink'),
+            downloadExcelLink: document.getElementById('downloadExcelLink'),
             // Add references to the form elements
             addRowForm: document.getElementById('addRowForm'),
             addRowButton: document.querySelector('.add-row-button'),
@@ -173,10 +321,20 @@ export class ZakatUIController {
         this.domElements.filterToggle?.addEventListener('change',
             () => this.updateUI());
         
-        // Add download link event listener
+        // Add download link event listeners
         this.domElements.downloadLink?.addEventListener('click', (e) => {
             e.preventDefault();
             this.downloadExampleJSON();
+        });
+        
+        this.domElements.downloadExcelLink?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.downloadExampleExcel();
+        });
+        
+        this.domElements.downloadCsvLink?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.downloadExampleCsv();
         });
         
         // Add form-related event listeners directly to the cached elements
@@ -189,31 +347,6 @@ export class ZakatUIController {
         this.languageManager.changeLanguage(lang);
         if (this.zakatData.length > 0) {
             this.updateUI();
-        }
-    }
-
-    async processUploads() {
-        if (!this.domElements.fileInput?.files.length) return;
-
-        try {
-            this.showLoadingState();
-            const file = this.domElements.fileInput.files[0];
-            const data = JSON.parse(await file.text());
-
-            // Validate JSON structure
-            this.validateJsonData(data);
-
-            this.calculator.setMonthlyData(data.monthlyData);
-            this.nisabService.setNisabData(data.nisabData);
-
-            if (data.goldApiKey) {
-                this.nisabService.setApiKey(data.goldApiKey);
-            }
-
-            this.zakatData = await this.calculator.calculateZakat();
-            this.updateUI();
-        } catch (error) {
-            this.showErrorState(error);
         }
     }
 
@@ -262,10 +395,19 @@ export class ZakatUIController {
 
     showErrorState(error) {
         console.error('File processing error:', error);
-        const errorMessage = this.languageManager.translate('error-loading-data');
-        const errorHTML = `<p class="error">${errorMessage}</p>`;
-        this.domElements.zakatTable.innerHTML = errorHTML;
-        this.domElements.nisabTable.innerHTML = errorHTML;
+        
+        // Check if it's an Excel parsing error
+        if (error.message && error.message.includes('Excel parsing error')) {
+            const errorMessage = this.languageManager.translate('excel-parsing-error');
+            const errorHTML = `<p class="error">${errorMessage}</p>`;
+            this.domElements.zakatTable.innerHTML = errorHTML;
+        } else {
+            const errorMessage = this.languageManager.translate('error-loading-data');
+            const errorHTML = `<p class="error">${errorMessage}: ${error.message}</p>`;
+            this.domElements.zakatTable.innerHTML = errorHTML;
+        }
+        
+        this.domElements.nisabTable.innerHTML = '';
     }
 
     generateZakatTable() {
@@ -289,7 +431,7 @@ export class ZakatUIController {
         this.initializeDataTable('zakatDataTable', true);
     }
 
-    // Add the missing createZakatTable method
+    // Create the zakat table
     createZakatTable(displayData) {
         const table = document.createElement('table');
         table.id = 'zakatDataTable';
@@ -314,67 +456,6 @@ export class ZakatUIController {
         table.appendChild(tbody);
         
         return table;
-    }
-    
-    // Add the missing downloadExampleJSON method
-    downloadExampleJSON() {
-        const downloadFile = (data, fileName) => {
-            const jsonString = JSON.stringify(data, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-    
-            const tempLink = document.createElement('a');
-            tempLink.href = url;
-            tempLink.download = fileName;
-            document.body.appendChild(tempLink);
-            tempLink.click();
-    
-            document.body.removeChild(tempLink);
-            URL.revokeObjectURL(url);
-        };
-    
-        // Fetch example data from GitHub repository
-        fetch('https://raw.githubusercontent.com/khalilcharfi/zakat/refs/heads/main/data.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(exampleData => {
-                downloadFile(exampleData, 'zakat_example.json');
-                
-                // Show how to use URL parameter (add a small info message)
-                const infoMessage = document.createElement('div');
-                infoMessage.className = 'info-message';
-                infoMessage.textContent = this.languageManager.translate('url_param_info') || 
-                    'Tip: You can share data via URL by adding ?data={"monthlyData":[...],"nisabData":{...}} to the URL';
-                
-                document.body.appendChild(infoMessage);
-                setTimeout(() => {
-                    if (document.body.contains(infoMessage)) {
-                        document.body.removeChild(infoMessage);
-                    }
-                }, 10000);
-            })
-            .catch(error => {
-                console.error('Error fetching example data:', error);
-                
-                // Fallback to hardcoded example if fetch fails
-                const fallbackData = {
-                    monthlyData: [
-                        { date: "01/2023", amount: 5000, interest: null },
-                        { date: "02/2023", amount: 5200, interest: 10 },
-                        { date: "03/2023", amount: 5300, interest: null }
-                    ],
-                    nisabData: {
-                        "2023": 5200
-                    },
-                    goldApiKey: "YOUR_GOLD_API_KEY_HERE" // Optional
-                };
-    
-                downloadFile(fallbackData, 'zakat_example.json');
-            });
     }
 
     generateTableRows(data) {
@@ -615,5 +696,86 @@ export class ZakatUIController {
         }
         
         return isValid;
+    }
+
+    // Excel conversion method - Fix the data structure issue
+    async convertExcelToJson(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Get the first sheet
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Convert to JSON
+                    const excelData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    // Format data to match expected structure
+                    const monthlyData = excelData.map(row => {
+                        return {
+                            date: row.Date || row.date,
+                            amount: Number(row.Amount || row.amount),
+                            interest: (row.Interest !== undefined ? Number(row.Interest) : 
+                                          (row.interest !== undefined ? Number(row.interest) : null))
+                        };
+                    });
+                    
+                    // Create a comprehensive nisab data object for all years in the data
+                    const nisabData = {};
+                    const defaultNisabValue = 5200; // Default value
+                    
+                    // Extract all years from the monthly data
+                    monthlyData.forEach(entry => {
+                        const [month, year] = entry.date.split('/');
+                        if (year && !nisabData[year]) {
+                            nisabData[year] = defaultNisabValue;
+                        }
+                    });
+                    
+                    // Ensure we have at least the current year if no data was found
+                    if (Object.keys(nisabData).length === 0) {
+                        const currentYear = new Date().getFullYear();
+                        nisabData[currentYear.toString()] = defaultNisabValue;
+                    }
+                    
+                    resolve({
+                        monthlyData: monthlyData,
+                        nisabData: nisabData
+                    });
+                } catch (error) {
+                    reject(new Error(`Excel parsing error: ${error.message}`));
+                }
+            };
+            
+            reader.onerror = () => reject(new Error('Error reading Excel file'));
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    // Excel download method
+    downloadExampleExcel() {
+        // Create a new workbook
+        const wb = XLSX.utils.book_new();
+        
+        // Create data with your specified format
+        const exampleData = [
+            { Date: "08/2022", Amount: 1458, Interest: 5 },
+            { Date: "09/2022", Amount: 1500, Interest: 3 },
+            { Date: "10/2022", Amount: 1550, Interest: 0 }
+        ];
+        
+        // Create worksheet from data
+        const ws = XLSX.utils.json_to_sheet(exampleData);
+        
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, "Zakat Data");
+        
+        // Generate Excel file and trigger download
+        XLSX.writeFile(wb, "zakat_example_template.xlsx");
     }
 }
