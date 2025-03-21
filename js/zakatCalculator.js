@@ -1,15 +1,25 @@
 export class ZakatCalculator {
-    constructor(languageManager, dateConverter, nisabService) {
+    // Add to constructor
+    constructor(languageManager, dateConverter, nisabService, dateConfig = {}) {
         this.languageManager = languageManager;
         this.dateConverter = dateConverter;
         this.nisabService = nisabService;
         this.monthlyData = [];
+        this.dateConfig = {
+            useHijri: dateConfig.useHijri !== undefined ? dateConfig.useHijri : true
+        };
     }
 
     setMonthlyData(data) {
         this.monthlyData = data;
     }
 
+    // Add method to update date configuration
+    setDateConfig(config = {}) {
+        this.dateConfig = { ...this.dateConfig, ...config };
+    }
+
+    // Modify calculateZakat method to use appropriate date calculation
     async calculateZakat() {
         const hawlState = {
             isActive: false,

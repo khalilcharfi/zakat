@@ -18,6 +18,15 @@ const CONFIG = {
             search: "",
             searchPlaceholder: "Search..."
         }
+    },
+    // Add date configuration options
+    DATE_CONFIG: {
+        USE_HIJRI: true, // Whether to use Hijri calendar for Hawl calculations
+        HAWL_PERIOD_MONTHS: 12, // Standard Hawl period in months
+        DATE_FORMAT: {
+            GREGORIAN: 'YYYY-MM-DD',
+            HIJRI: 'iYYYY/iMM/iDD'
+        }
     }
 };
 
@@ -50,7 +59,8 @@ export class ZakatUIController {
                 supportedLanguages: CONFIG.SUPPORTED_LANGUAGES,
                 cacheDuration: CONFIG.CACHE_DURATION,
                 defaultNisabValue: CONFIG.DEFAULT_NISAB_VALUE,
-                tableConfig: CONFIG.TABLE_CONFIG
+                tableConfig: CONFIG.TABLE_CONFIG,
+                dateConfig: CONFIG.DATE_CONFIG // Add date configuration
             },
             ...options
         };
@@ -66,6 +76,46 @@ export class ZakatUIController {
         this.domElements = {};
 
         this.init();
+    }
+
+    // Add method to initialize moment-hijri
+    async initializeMomentHijri() {
+        // Only load if we're using Hijri dates
+        if (this.options.dateConfig.USE_HIJRI) {
+            try {
+                // Check if moment is already available
+                if (!window.moment) {
+                    console.warn('Moment.js not loaded. Loading from CDN...');
+                    await this.loadScript('https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js');
+                }
+                
+                // Check if moment-hijri is already available
+                if (!window.moment.hijri) {
+                    console.log('Loading moment-hijri...');
+                    await this.loadScript('https://cdn.jsdelivr.net/npm/moment-hijri@2.1.2/moment-hijri.min.js');
+                }
+                
+                console.log('Moment-hijri initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize moment-hijri:', error);
+                // Set fallback to use Gregorian dates
+                this.options.dateConfig.USE_HIJRI = false;
+            }
+        }
+    }
+    
+    // Helper method to load scripts asynchronously
+    loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+            
+            document.head.appendChild(script);
+        });
     }
 
     async init() {
