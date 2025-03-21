@@ -3,6 +3,8 @@ import {NisabService} from './nisabService.js';
 import {LanguageManager} from './languageManager.js';
 import {ZakatCalculator} from './zakatCalculator.js';
 
+Dropzone.autoDiscover = false; // Disable auto-discovery to manually initialize Dropzone
+
 // Configuration constants
 const CONFIG = {
     DEFAULT_LANGUAGE: 'en',
@@ -36,9 +38,12 @@ const DOM_IDS = {
     NISAB_TABLE: 'nisabTable',
     LANGUAGE_SELECT: 'languageSelect',
     FILTER_TOGGLE: 'filterZakatToggle',
+    UPLOAD_BUTTON: '.file-upload button',
+    TOOLBAR_CONTAINER: '.toolbar-container',
     FILE_INPUT: 'dataUpload',
     API_NOTE: '.api-note',
     DOWNLOAD_LINK: 'downloadLink',
+    VIEW_BUTTON: '.view-button',
     DOWNLOAD_EXCEL_LINK: 'downloadExcelLink',
     DOWNLOAD_CSV_LINK: 'downloadCsvLink',
     ADD_ROW_FORM: 'addRowForm',
@@ -47,7 +52,8 @@ const DOM_IDS = {
     CANCEL_ROW_BUTTON: '.cancel-row-button',
     NEW_ROW_DATE: 'newRowDate',
     NEW_ROW_AMOUNT: 'newRowAmount',
-    NEW_ROW_INTEREST: 'newRowInterest'
+    NEW_ROW_INTEREST: 'newRowInterest',
+    FILE_DROP_AREA: 'fileDropArea'
 };
 
 export class ZakatUIController {
@@ -118,10 +124,44 @@ export class ZakatUIController {
         });
     }
 
+    // In the init() method's Dropzone configuration:
     async init() {
         // Cache DOM elements for better performance
         this.cacheDOMElements();
         this.setupEventListeners();
+        
+        // Initialize Dropzone only after DOM elements are cached
+        if (this.domElements.fileDropArea) {
+            const controller = this;
+            
+            this.dropzone = new Dropzone(this.domElements.fileDropArea, {
+                url: "#",
+                autoProcessQueue: false,
+                maxFiles: 1,
+                acceptedFiles: ".json,.csv,.xls,.xlsx",
+                previewsContainer: false,
+                createImageThumbnails: false,
+                init: function() {
+                    this.on("addedfile", function(file) {
+                        console.log("File added:", file.name);
+                        if (controller.domElements.fileDropArea) {
+                            controller.domElements.fileDropArea.classList.add('file-added');
+                            // Call the controller's method instead of this.processUploads()
+                            controller.processUploads();
+                        }
+                        if (file.previewElement) {
+                            file.previewElement.remove();
+                        }
+                    });
+                    
+                    this.on("removedfile", function() {
+                        if (controller.domElements.fileDropArea) {
+                            controller.domElements.fileDropArea.classList.remove('file-added');
+                        }
+                    });
+                }
+            });
+        }
 
         // Set initial language based on browser preference
         const browserLang = navigator.language.split('-')[0];
@@ -179,11 +219,16 @@ export class ZakatUIController {
     }
 
     async processUploads() {
-        if (!this.domElements.fileInput?.files.length) return;
+        console.log("Processing uploads...");
+        // Check if Dropzone has files instead of file input
+        if (!this.dropzone?.files.length) {
+            return;
+        }
 
         try {
             this.showLoadingState();
-            const file = this.domElements.fileInput.files[0];
+            // Get the first file from Dropzone
+            const file = this.dropzone.files[0];
             let data;
             
             // Check file extension to determine processing method
@@ -210,8 +255,21 @@ export class ZakatUIController {
 
             this.zakatData = await this.calculator.calculateZakat();
             this.updateUI();
+            
+            // Scroll to the datatable view after processing is complete
+            setTimeout(() => {
+                const tableElement = document.querySelector('.table-view-controls');
+                if (tableElement) {
+                    tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 500); // Small delay to ensure the table is fully rendered
         } catch (error) {
             this.showErrorState(error);
+        } finally {
+            // Remove all files from Dropzone after processing
+            if (this.dropzone) {
+                this.dropzone.removeAllFiles();
+            }
         }
     }
 
@@ -394,6 +452,7 @@ export class ZakatUIController {
             nisabTable: document.getElementById(DOM_IDS.NISAB_TABLE),
             languageSelect: document.getElementById(DOM_IDS.LANGUAGE_SELECT),
             filterToggle: document.getElementById(DOM_IDS.FILTER_TOGGLE),
+            toolbarContainer: document.querySelector(DOM_IDS.TOOLBAR_CONTAINER),
             uploadButton: document.querySelector('.file-upload button'),
             fileInput: document.getElementById(DOM_IDS.FILE_INPUT),
             apiNote: document.querySelector(DOM_IDS.API_NOTE),
@@ -407,7 +466,10 @@ export class ZakatUIController {
             cancelRowButton: document.querySelector(DOM_IDS.CANCEL_ROW_BUTTON),
             newRowDate: document.getElementById(DOM_IDS.NEW_ROW_DATE),
             newRowAmount: document.getElementById(DOM_IDS.NEW_ROW_AMOUNT),
-            newRowInterest: document.getElementById(DOM_IDS.NEW_ROW_INTEREST)
+            newRowInterest: document.getElementById(DOM_IDS.NEW_ROW_INTEREST),
+            fileDropArea: document.getElementById(DOM_IDS.FILE_DROP_AREA),
+            // Add references to the form elements
+            viewButtons: document.querySelectorAll('.view-button'),
         };
     }
 
@@ -456,8 +518,13 @@ export class ZakatUIController {
             });
         }
 
-        this.domElements.uploadButton?.addEventListener('click',
-            () => this.processUploads());
+        // Handle upload button click to trigger Dropzone
+        this.domElements.fileInput?.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (this.dropzone) {
+                this.dropzone.hiddenFileInput.click(); 
+            }
+        });
 
         this.domElements.filterToggle?.addEventListener('change',
             () => this.updateUI());
@@ -548,6 +615,24 @@ export class ZakatUIController {
     updateUI() {
         this.generateZakatTable();
         this.generateNisabTable();
+
+        if (!this.zakatData || this.zakatData.length === 0) {
+            // Hide filter toggle when there's no data
+            if (this.domElements.toolbarContainer) {
+                this.domElements.toolbarContainer.classList.add('hidden');
+                this.domElements.viewButtons.forEach(button => {
+                    button.classList.add('hidden');
+                });
+            }
+        } else {
+            // Show filter toggle when we have data
+            if (this.domElements.toolbarContainer) {
+                this.domElements.toolbarContainer.classList.remove('hidden');
+                this.domElements.viewButtons.forEach(button => {
+                    button.classList.remove('hidden');
+                });
+            }
+        }
     }
 
     showLoadingState() {
@@ -627,18 +712,30 @@ export class ZakatUIController {
         const tempDiv = document.createElement('div');
         
         // Build HTML string for better performance than DOM manipulation
-        const rowsHTML = data.map(row => `
-            <tr data-row-class="${row.rowClass}">
-                <td>${row.date}</td>
-                <td>${row.hijriDate}</td>
-                <td>${this.formatCurrency(row.amount)}</td>
-                <td>${this.formatCurrency(row.interest)}</td>
-                <td>${this.formatCurrency(row.total)}</td>
-                <td>${this.formatCurrency(row.nisab)}</td>
-                <td>${row.zakat ? this.formatCurrency(row.zakat) : '-'}</td>
-                <td data-i18n="${row.note}">${this.languageManager.translate(row.note).replace('{date}', row.date)}</td>     
-            </tr>
-        `).join('');
+        const rowsHTML = data.map(row => {
+            // Precompute values that are repeatedly used
+            const formatCurrency = this.formatCurrency;
+            const translateNote = this.languageManager.translate(row.note).replace('{date}', row.date);
+        
+            // Define fields and their dynamic values
+            const fields = [
+                { name: 'date', value: row.date },
+                { name: 'hijriDate', value: row.hijriDate },
+                { name: 'amount', value: formatCurrency(row.amount) },
+                { name: 'interest', value: formatCurrency(row.interest) },
+                { name: 'total', value: formatCurrency(row.total) },
+                { name: 'nisab', value: formatCurrency(row.nisab) },
+                { name: row.zakat ? 'zakat' : 'no-zakat', value: row.zakat ? formatCurrency(row.zakat) : '-' },
+                { name: `note-${row.note}`, value: translateNote, attr: `data-i18n="${row.note}"` }
+            ];
+        
+            // Create table data cells dynamically
+            const cellsHTML = fields.map(({ name, value, attr = '' }) => 
+                `<td data-name="${name}" ${attr}>${value}</td>`
+            ).join('');
+        
+            return `<tr data-row-class="${row.rowClass}">${cellsHTML}</tr>`;
+        }).join('');
         
         return rowsHTML;
     }
