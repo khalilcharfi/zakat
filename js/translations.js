@@ -40,7 +40,12 @@ const translations = {
         "download-excel-template": 'Download Excel Template',
         'excel-upload-info': 'You can also upload Excel files (.xlsx, .xls) with columns: Date, Amount, and Interest',
         'excel-parsing-error': 'Error parsing Excel file. Please check the format.',
-        "download-error":  "Error downloading example file. Please try again."
+        "download-error":  "Error downloading example file. Please try again.",
+        // Add Dropzone translations
+        "dropzone-message": "Drag and drop files here or click to browse",
+        "dropzone-remove": "Remove file",
+        "dropzone-error": "Error processing file",
+        "dropzone-success": "File processed successfully"
     },
     fr: {
         'filter-zakat-due': 'Afficher uniquement les lignes avec une date d\'échéance ou un zakat éligible',
@@ -112,7 +117,12 @@ const translations = {
         'upload-data-prompt': 'يرجى تحميل ملف البيانات المالية لبدء الحسابات.',
         ar: {
             "download-error": "خطأ في تنزيل ملف المثال. يرجى المحاولة مرة أخرى",
-            'add-new-entry': 'إضافة صف جديد'
+            'add-new-entry': 'إضافة صف جديد',
+            // Add Dropzone translations
+            "dropzone-message": "اسحب وأفلت الملفات هنا أو انقر للتصفح",
+            "dropzone-remove": "إزالة الملف",
+            "dropzone-error": "خطأ في معالجة الملف",
+            "dropzone-success": "تمت معالجة الملف بنجاح"
         }
     }
 };
