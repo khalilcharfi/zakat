@@ -28,6 +28,8 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
 
@@ -112,7 +114,7 @@
                     <label for="dataUpload" class="browse-button">
                         <span data-i18n="browse-files">Browse Files</span>
                     </label>
-                    <input type="file" id="dataUpload" accept=".json,.xlsx,.xls,.csv"
+                    <input type="button" id="dataUpload"
                            aria-describedby="fileFormatHelp"
                            aria-label="Upload financial data file">
                     <div class="accepted-formats">
@@ -190,11 +192,6 @@
             <div class="results-toolbar">
                 <div class="filter-controls">
 
-                    <label class="toggle-control">
-                        <input type="checkbox" id="filterZakatToggle">
-                        <span class="toggle-slider"></span>
-                        <span class="toggle-label" data-i18n="filter-zakat-due">Show only eligible entries</span>
-                    </label>
                 </div>
 
                 <div class="export-options">
@@ -288,37 +285,24 @@
               </div>
             </div>
 
-            <!-- Date picker popup -->
-            <div class="date-picker-popup hidden" id="datePickerPopup">
-              <div class="date-picker-header">
-                <button class="prev-year"><i class="fas fa-chevron-left"></i></button>
-                <span class="year-display">2023</span>
-                <button class="next-year"><i class="fas fa-chevron-right"></i></button>
-              </div>
-              <div class="months-grid">
-                <button class="month-button" data-month="01">Jan</button>
-                <button class="month-button" data-month="02">Feb</button>
-                <button class="month-button" data-month="03">Mar</button>
-                <button class="month-button" data-month="04">Apr</button>
-                <button class="month-button" data-month="05">May</button>
-                <button class="month-button" data-month="06">Jun</button>
-                <button class="month-button" data-month="07">Jul</button>
-                <button class="month-button" data-month="08">Aug</button>
-                <button class="month-button" data-month="09">Sep</button>
-                <button class="month-button" data-month="10">Oct</button>
-                <button class="month-button" data-month="11">Nov</button>
-                <button class="month-button" data-month="12">Dec</button>
-              </div>
-            </div>
-
             <!-- Responsive table with tabs for mobile -->
             <div class="table-view-controls">
-                <button class="view-button active" data-view="table" aria-pressed="true">
+                <button class="view-button active hidden" data-view="table" aria-pressed="true">
                     <i class="fas fa-table"></i> <span data-i18n="table-view">Table</span>
                 </button>
-                <button class="view-button" data-view="cards" aria-pressed="false">
+                <button class="view-button hidden" data-view="cards" aria-pressed="false">
                     <i class="fas fa-th-large"></i> <span data-i18n="card-view">Cards</span>
                 </button>
+            </div>
+
+            <div class="results-toolbar toolbar-container hidden">
+                <div class="filter-controls">
+                    <label class="toggle-control">
+                        <input type="checkbox" id="filterZakatToggle">
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label" data-i18n="filter-zakat-due">Show only eligible entries</span>
+                    </label>
+                </div>
             </div>
 
             <div id="zakatTable" class="table-container" role="region" aria-live="polite" aria-atomic="true">
@@ -438,6 +422,8 @@
 <script src="https://cdn.jsdelivr.net/npm/moment-hijri@3.0.0/moment-hijri.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
+
 <script type="module" src="js/app.js"></script>
 </body>
 </html>
