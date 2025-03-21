@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/scroller/2.2.0/css/scroller.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -39,7 +39,7 @@
         gtag('js', new Date());
         gtag('config', 'G-RQQCLVB89Z');
     </script>
-    
+
     <!-- Excel export library -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -47,20 +47,11 @@
 <div class="container">
     <header class="app-header">
         <div class="logo-container">
-            <img src="img/logo.svg" alt="Zakat Calculator Logo" class="app-logo">
+            <img src="img/ic_launcher.png" alt="Zakat Calculator Logo" class="app-logo">
             <h1 class="app-title">Zakat Calculator</h1>
         </div>
-        
+
         <div class="header-controls">
-            <div class="theme-toggle">
-                <input type="checkbox" id="themeToggle" class="theme-toggle-input">
-                <label for="themeToggle" class="theme-toggle-label">
-                    <i class="fas fa-sun"></i>
-                    <i class="fas fa-moon"></i>
-                    <span class="theme-toggle-ball"></span>
-                </label>
-            </div>
-            
             <div class="language-selector">
                 <div class="language-dropdown">
                     <button class="language-button" aria-haspopup="true" aria-expanded="false">
@@ -112,7 +103,7 @@
 
         <section class="file-upload-section card" aria-labelledby="uploadHeading">
             <h2 id="uploadHeading" data-i18n="upload-section-title">Upload Financial Data</h2>
-            
+
             <div class="file-upload">
                 <div class="file-drop-area" id="fileDropArea">
                     <i class="fas fa-cloud-upload-alt upload-icon"></i>
@@ -121,7 +112,7 @@
                     <label for="dataUpload" class="browse-button">
                         <span data-i18n="browse-files">Browse Files</span>
                     </label>
-                    <input type="file" id="dataUpload" accept=".json,.xlsx,.xls,.csv" 
+                    <input type="file" id="dataUpload" accept=".json,.xlsx,.xls,.csv"
                            aria-describedby="fileFormatHelp"
                            aria-label="Upload financial data file">
                     <div class="accepted-formats">
@@ -131,14 +122,14 @@
                         <span class="format-badge">CSV</span>
                     </div>
                 </div>
-                
+
                 <div class="upload-progress-container" style="display: none;">
                     <div class="progress-bar-outer">
                         <div class="progress-bar-inner" style="width: 0%"></div>
                     </div>
                     <div class="progress-text">0%</div>
                 </div>
-                
+
                 <div class="upload-actions">
                     <button type="button" class="primary-button" id="processUploads" data-i18n="process-uploads">
                         <i class="fas fa-calculator"></i> Calculate Zakat
@@ -147,11 +138,11 @@
                         <i class="fas fa-vial"></i> Use Sample Data
                     </button>
                 </div>
-                
+
                 <div id="fileFormatHelp" class="file-upload-info">
                     <p data-i18n="upload-format-info">Upload your financial data in JSON, Excel, or CSV format.</p>
                     <p data-i18n="excel-upload-info">For Excel files, ensure columns match the required format.</p>
-                    
+
                     <details class="file-upload-example">
                         <summary>
                             <span class="content-container">
@@ -195,17 +186,17 @@
 
         <section class="zakat-results card" aria-labelledby="zakatResults">
             <h2 id="zakatResults" data-i18n="zakat-calculation-title">Zakat Calculations</h2>
-            
+
             <div class="results-toolbar">
                 <div class="filter-controls">
-            
+
                     <label class="toggle-control">
                         <input type="checkbox" id="filterZakatToggle">
                         <span class="toggle-slider"></span>
                         <span class="toggle-label" data-i18n="filter-zakat-due">Show only eligible entries</span>
                     </label>
                 </div>
-                
+
                 <div class="export-options">
                     <button class="tool-button" id="exportExcel" title="Export to Excel">
                         <i class="fas fa-file-excel"></i>
@@ -218,7 +209,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- Data visualization section -->
             <div class="data-visualization">
                 <div class="chart-container">
@@ -245,14 +236,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Add Row Button Container -->
             <div class="add-row-container">
                 <button class="add-row-button">
                     <i class="fas fa-plus"></i> <span data-i18n="add-new-entry">Add New Entry</span>
                 </button>
             </div>
-            
+
             <!-- Add Row Form - With improved layout and validation -->
             <div class="add-row-form hidden" id="addRowForm">
               <div class="form-header">
@@ -261,7 +252,7 @@
                   <i class="fas fa-times"></i>
                 </button>
               </div>
-              
+
               <div class="form-row">
                 <div class="form-group">
                   <label for="newRowDate"><span data-i18n="date">Date</span></label>
@@ -271,7 +262,7 @@
                   </div>
                   <div class="error-message" data-i18n="invalid-date">Invalid date format (MM/YYYY)</div>
                 </div>
-                
+
                 <div class="form-group currency-input">
                   <label for="newRowAmount"><span data-i18n="amount">Amount</span></label>
                   <div class="input-with-icon">
@@ -280,7 +271,7 @@
                   </div>
                   <div class="error-message" data-i18n="invalid-amount">Amount must be greater than zero</div>
                 </div>
-                
+
                 <div class="form-group currency-input">
                   <label for="newRowInterest"><span data-i18n="interest">Interest</span></label>
                   <div class="input-with-icon">
@@ -290,13 +281,13 @@
                   <div class="error-message" data-i18n="invalid-interest">Interest must be zero or greater</div>
                 </div>
               </div>
-              
+
               <div class="form-actions">
                 <button class="cancel-row-button" data-i18n="cancel">Cancel</button>
                 <button class="save-row-button" data-i18n="save">Save</button>
               </div>
             </div>
-            
+
             <!-- Date picker popup -->
             <div class="date-picker-popup hidden" id="datePickerPopup">
               <div class="date-picker-header">
@@ -319,7 +310,7 @@
                 <button class="month-button" data-month="12">Dec</button>
               </div>
             </div>
-            
+
             <!-- Responsive table with tabs for mobile -->
             <div class="table-view-controls">
                 <button class="view-button active" data-view="table" aria-pressed="true">
@@ -329,11 +320,11 @@
                     <i class="fas fa-th-large"></i> <span data-i18n="card-view">Cards</span>
                 </button>
             </div>
-            
+
             <div id="zakatTable" class="table-container" role="region" aria-live="polite" aria-atomic="true">
                 <div class="loading" data-i18n="upload-data-prompt">Please upload your financial data to get started</div>
             </div>
-            
+
             <div id="zakatCards" class="cards-container hidden">
                 <!-- Card view content will be generated by JavaScript -->
             </div>
@@ -341,7 +332,7 @@
 
         <section class="nisab-reference card" aria-labelledby="nisabReference">
             <h2 id="nisabReference" data-i18n="nisab-reference-title">Nisab Reference Values</h2>
-            
+
             <div class="nisab-info-tooltip">
                 <i class="fas fa-info-circle"></i>
                 <div class="tooltip-content" data-i18n="nisab-info">
@@ -349,16 +340,16 @@
                     It is calculated based on the value of gold or silver.
                 </div>
             </div>
-            
+
             <div id="nisabTable" class="table-container" role="region" aria-live="polite" aria-atomic="true">
                 <div class="loading" data-i18n="upload-data-prompt">Please upload your financial data to view Nisab references</div>
             </div>
         </section>
-        
+
         <!-- Help section -->
         <section class="help-section card" aria-labelledby="helpSection">
             <h2 id="helpSection" data-i18n="help-section-title">Help & Resources</h2>
-            
+
             <div class="accordion">
                 <div class="accordion-item">
                     <button class="accordion-header" aria-expanded="false">
@@ -371,7 +362,7 @@
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="accordion-item">
                     <button class="accordion-header" aria-expanded="false">
                         <span data-i18n="faq-how-calculated">How is Zakat calculated?</span>
@@ -383,7 +374,7 @@
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="accordion-item">
                     <button class="accordion-header" aria-expanded="false">
                         <span data-i18n="faq-data-privacy">Is my financial data secure?</span>
@@ -406,7 +397,7 @@
                 <a href="#" data-i18n="footer-privacy">Privacy</a>
                 <a href="#" data-i18n="footer-contact">Contact</a>
             </div>
-            
+
             <div class="footer-divider"></div>
 
             <div class="footer-info">
@@ -427,7 +418,7 @@
 
             <p class="copyright">© 2024 Zakat Calculator</p>
         </div>
-        
+
         <p class="api-note" style="display: none;" data-i18n="api-note"></p>
         <div id="apiError" class="error" role="alert" aria-live="assertive" style="display: none;"></div>
     </footer>
