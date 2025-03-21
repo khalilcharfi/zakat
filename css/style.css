@@ -1292,3 +1292,46 @@
 .accordion-header[aria-expanded="true"] + .accordion-content {
   max-height: 1000px; /* Set to a high enough value */
 }
+
+.file-drop-area {
+  transition: background-color 0.3s ease;
+  /* Add your default dropzone styles here */
+}
+
+.file-drop-area.file-added {
+  background-color: #e8f5e9;
+
+}
+
+.hawl-start {
+  background-color: #e8f5e9 !important;
+}
+
+.below-nisab {
+  background-color: #fce4ec !important;
+}
+
+.zakat-due {
+  background-color: #fff3e0!important;
+}
+
+/* Style the 'interest' column */
+td[data-name="interest"] {
+  color: #c0392b;
+  font-weight: bold;
+}
+
+/* Style the 'zakat' column */
+td[data-name="zakat"] {
+  font-weight: bold;
+  color: var(--primary-dark);
+}
+
+td[data-name="note-hawl-complete-zakat-due"] {
+  font-weight: bold;       
+  color: #333;            
+}
+
+.hidden {
+  display: none;
+}
