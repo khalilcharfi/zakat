@@ -482,6 +482,28 @@ export class ZakatUIController {
         this.domElements.addRowButton?.addEventListener('click', () => this.showAddRowForm());
         this.domElements.saveRowButton?.addEventListener('click', () => this.saveNewRow());
         this.domElements.cancelRowButton?.addEventListener('click', () => this.hideAddRowForm());
+
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const expanded = header.getAttribute('aria-expanded') === 'true';
+                const content = header.nextElementSibling;
+    
+                // Toggle the aria-expanded attribute
+                header.setAttribute('aria-expanded', !expanded);
+    
+                // Toggle the content visibility with smooth transition
+                if (expanded) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }
+    
+                // Optionally, toggle the icon direction
+                const icon = header.querySelector('i');
+                icon.classList.toggle('fa-chevron-down', expanded);
+                icon.classList.toggle('fa-chevron-up', !expanded);
+            });
+        });
     }
 
     changeLanguage(lang) {
