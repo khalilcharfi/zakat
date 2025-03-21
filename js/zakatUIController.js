@@ -3,8 +3,58 @@ import {NisabService} from './nisabService.js';
 import {LanguageManager} from './languageManager.js';
 import {ZakatCalculator} from './zakatCalculator.js';
 
+// Configuration constants
+const CONFIG = {
+    DEFAULT_LANGUAGE: 'en',
+    SUPPORTED_LANGUAGES: ['fr', 'ar', 'en'],
+    CACHE_DURATION: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+    DEFAULT_NISAB_VALUE: 5200,
+    TABLE_CONFIG: {
+        paging: true,
+        searching: true,
+        ordering: true,
+        responsive: true,
+        language: {
+            search: "",
+            searchPlaceholder: "Search..."
+        }
+    }
+};
+
+// DOM element IDs
+const DOM_IDS = {
+    ZAKAT_TABLE: 'zakatTable',
+    NISAB_TABLE: 'nisabTable',
+    LANGUAGE_SELECT: 'languageSelect',
+    FILTER_TOGGLE: 'filterZakatToggle',
+    FILE_INPUT: 'dataUpload',
+    API_NOTE: '.api-note',
+    DOWNLOAD_LINK: 'downloadLink',
+    DOWNLOAD_EXCEL_LINK: 'downloadExcelLink',
+    DOWNLOAD_CSV_LINK: 'downloadCsvLink',
+    ADD_ROW_FORM: 'addRowForm',
+    ADD_ROW_BUTTON: '.add-row-button',
+    SAVE_ROW_BUTTON: '.save-row-button',
+    CANCEL_ROW_BUTTON: '.cancel-row-button',
+    NEW_ROW_DATE: 'newRowDate',
+    NEW_ROW_AMOUNT: 'newRowAmount',
+    NEW_ROW_INTEREST: 'newRowInterest'
+};
+
 export class ZakatUIController {
-    constructor() {
+    constructor(options = {}) {
+        // Merge provided options with defaults
+        this.options = {
+            ...{
+                defaultLanguage: CONFIG.DEFAULT_LANGUAGE,
+                supportedLanguages: CONFIG.SUPPORTED_LANGUAGES,
+                cacheDuration: CONFIG.CACHE_DURATION,
+                defaultNisabValue: CONFIG.DEFAULT_NISAB_VALUE,
+                tableConfig: CONFIG.TABLE_CONFIG
+            },
+            ...options
+        };
+
         // Initialize services and dependencies
         this.languageManager = new LanguageManager();
         this.dateConverter = new DateConverter();
@@ -25,7 +75,9 @@ export class ZakatUIController {
 
         // Set initial language based on browser preference
         const browserLang = navigator.language.split('-')[0];
-        const initialLang = ['fr', 'ar', 'en'].includes(browserLang) ? browserLang : 'en';
+        const initialLang = this.options.supportedLanguages.includes(browserLang) 
+            ? browserLang 
+            : this.options.defaultLanguage;
         this.languageManager.changeLanguage(initialLang);
         
         // Load gold price data
@@ -286,26 +338,62 @@ export class ZakatUIController {
     }
 
     cacheDOMElements() {
-        // Cache frequently accessed DOM elements
+        // Cache frequently accessed DOM elements using the DOM_IDS constants
         this.domElements = {
-            zakatTable: document.getElementById('zakatTable'),
-            nisabTable: document.getElementById('nisabTable'),
-            languageSelect: document.getElementById('languageSelect'),
-            filterToggle: document.getElementById('filterZakatToggle'),
+            zakatTable: document.getElementById(DOM_IDS.ZAKAT_TABLE),
+            nisabTable: document.getElementById(DOM_IDS.NISAB_TABLE),
+            languageSelect: document.getElementById(DOM_IDS.LANGUAGE_SELECT),
+            filterToggle: document.getElementById(DOM_IDS.FILTER_TOGGLE),
             uploadButton: document.querySelector('.file-upload button'),
-            fileInput: document.getElementById('dataUpload'),
-            apiNote: document.querySelector('.api-note'),
-            downloadLink: document.getElementById('downloadLink'),
-            downloadExcelLink: document.getElementById('downloadExcelLink'),
+            fileInput: document.getElementById(DOM_IDS.FILE_INPUT),
+            apiNote: document.querySelector(DOM_IDS.API_NOTE),
+            downloadLink: document.getElementById(DOM_IDS.DOWNLOAD_LINK),
+            downloadExcelLink: document.getElementById(DOM_IDS.DOWNLOAD_EXCEL_LINK),
+            downloadCsvLink: document.getElementById(DOM_IDS.DOWNLOAD_CSV_LINK),
             // Add references to the form elements
-            addRowForm: document.getElementById('addRowForm'),
-            addRowButton: document.querySelector('.add-row-button'),
-            saveRowButton: document.querySelector('.save-row-button'),
-            cancelRowButton: document.querySelector('.cancel-row-button'),
-            newRowDate: document.getElementById('newRowDate'),
-            newRowAmount: document.getElementById('newRowAmount'),
-            newRowInterest: document.getElementById('newRowInterest')
+            addRowForm: document.getElementById(DOM_IDS.ADD_ROW_FORM),
+            addRowButton: document.querySelector(DOM_IDS.ADD_ROW_BUTTON),
+            saveRowButton: document.querySelector(DOM_IDS.SAVE_ROW_BUTTON),
+            cancelRowButton: document.querySelector(DOM_IDS.CANCEL_ROW_BUTTON),
+            newRowDate: document.getElementById(DOM_IDS.NEW_ROW_DATE),
+            newRowAmount: document.getElementById(DOM_IDS.NEW_ROW_AMOUNT),
+            newRowInterest: document.getElementById(DOM_IDS.NEW_ROW_INTEREST)
         };
+    }
+
+    // Method to initialize DataTable with configurable options
+    initializeDataTable(tableId, enablePaging = true) {
+        const table = $(`#${tableId}`);
+        if (table.length) {
+            // Apply table configuration with any custom options
+            const tableConfig = {
+                ...this.options.tableConfig,
+                paging: enablePaging
+            };
+            
+            // Add language-specific configurations
+            if (this.languageManager) {
+                const currentLang = this.languageManager.currentLanguage;
+                tableConfig.language = {
+                    ...tableConfig.language,
+                    searchPlaceholder: this.languageManager.translate('search') || "Search...",
+                    paginate: {
+                        first: this.languageManager.translate('first') || "First",
+                        last: this.languageManager.translate('last') || "Last",
+                        next: this.languageManager.translate('next') || "Next",
+                        previous: this.languageManager.translate('previous') || "Previous"
+                    }
+                };
+                
+                // Set RTL for Arabic
+                if (currentLang === 'ar') {
+                    tableConfig.direction = 'rtl';
+                }
+            }
+            
+            // Initialize the DataTable
+            table.DataTable(tableConfig);
+        }
     }
 
     setupEventListeners() {
