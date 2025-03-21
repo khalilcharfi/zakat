@@ -38,7 +38,16 @@ export class NisabService {
     // Add a new method to load the gold price data
     async loadGoldPriceData() {
         try {
-            const response = await fetch('../data/gold-price-data.json');
+            // Try local first, fallback to GitHub if not found
+            let response;
+            try {
+                response = await fetch('../data/gold-price-data.json');
+                if (!response.ok) throw new Error(`Local file error: ${response.status}`);
+            } catch (localError) {
+                console.log('Using GitHub gold price data');
+                response = await fetch('https://raw.githubusercontent.com/khalilcharfi/zakat/main/data/gold-price-data.json');
+            }
+            
             if (!response.ok) {
                 throw new Error(`Failed to fetch gold price data: ${response.status}`);
             }
