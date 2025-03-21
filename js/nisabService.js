@@ -35,6 +35,57 @@ export class NisabService {
         };
     }
 
+    // Add a new method to load the gold price data
+    async loadGoldPriceData() {
+        try {
+            const response = await fetch('../data/gold-price-data.json');
+            if (!response.ok) {
+                throw new Error(`Failed to fetch gold price data: ${response.status}`);
+            }
+            
+            const goldPriceData = await response.json();
+            
+            // Process the gold price data to calculate nisab values
+            // Group by year and calculate average price per year
+            const yearlyPrices = {};
+            
+            goldPriceData.forEach(entry => {
+                const year = entry.date.split('-')[0];
+                const price = parseFloat(entry.price);
+                
+                if (!yearlyPrices[year]) {
+                    yearlyPrices[year] = { sum: 0, count: 0 };
+                }
+                
+                yearlyPrices[year].sum += price;
+                yearlyPrices[year].count++;
+            });
+            
+            // Calculate nisab values (85 grams of gold)
+            for (const year in yearlyPrices) {
+                const averagePrice = yearlyPrices[year].sum / yearlyPrices[year].count;
+                const nisabValue = averagePrice * 85; // 85 grams of gold for nisab
+                
+                // Round to 2 decimal places
+                this.nisabData[year] = Math.round(nisabValue * 100) / 100;
+            }
+            
+            this.isFromApi = false;
+            this.saveCache();
+            
+            return {
+                fromApi: this.isFromApi,
+                data: this.nisabData,
+            };
+        } catch (error) {
+            console.error('Error loading gold price data:', error);
+            return {
+                fromApi: this.isFromApi,
+                data: this.nisabData,
+            };
+        }
+    }
+
     async fetchNisabValue(year) {    
         if (this.pendingRequests.has(year)) {return this.pendingRequests.get(year)};
 

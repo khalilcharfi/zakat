@@ -18,7 +18,7 @@ export class ZakatUIController {
         this.init();
     }
 
-    init() {
+    async init() {
         // Cache DOM elements for better performance
         this.cacheDOMElements();
         this.setupEventListeners();
@@ -27,6 +27,9 @@ export class ZakatUIController {
         const browserLang = navigator.language.split('-')[0];
         const initialLang = ['fr', 'ar', 'en'].includes(browserLang) ? browserLang : 'en';
         this.languageManager.changeLanguage(initialLang);
+        
+        // Load gold price data
+        await this.nisabService.loadGoldPriceData();
         
         // Check for data in URL parameters
         this.checkUrlForData();
