@@ -50,6 +50,7 @@ const DOM_IDS = {
     ADD_ROW_BUTTON: '.add-row-button',
     SAVE_ROW_BUTTON: '.save-row-button',
     CANCEL_ROW_BUTTON: '.cancel-row-button',
+    CLOSE_FORM_BUTTON: '.close-form-button',
     NEW_ROW_DATE: 'newRowDate',
     NEW_ROW_AMOUNT: 'newRowAmount',
     NEW_ROW_INTEREST: 'newRowInterest',
@@ -464,6 +465,7 @@ export class ZakatUIController {
             addRowButton: document.querySelector(DOM_IDS.ADD_ROW_BUTTON),
             saveRowButton: document.querySelector(DOM_IDS.SAVE_ROW_BUTTON),
             cancelRowButton: document.querySelector(DOM_IDS.CANCEL_ROW_BUTTON),
+            closeFormButton: document.querySelector(DOM_IDS.CLOSE_FORM_BUTTON),
             newRowDate: document.getElementById(DOM_IDS.NEW_ROW_DATE),
             newRowAmount: document.getElementById(DOM_IDS.NEW_ROW_AMOUNT),
             newRowInterest: document.getElementById(DOM_IDS.NEW_ROW_INTEREST),
@@ -526,8 +528,33 @@ export class ZakatUIController {
             }
         });
 
-        this.domElements.filterToggle?.addEventListener('change',
-            () => this.updateUI());
+              // Setup filter toggle with DataTables API
+              if (this.domElements.filterToggle) {
+                // Store the filter function as a property of the class
+                this.zakatFilterFunction = (settings, data) => {
+                    // Only apply to our zakat table
+                    if (settings.nTable.id !== 'zakatDataTable') return true;
+                    
+                    // If filter is not checked, show all rows
+                    if (!this.domElements.filterToggle.checked) return true;
+                    
+                    // Get the zakat value (column 6) and note (column 7)
+                    const zakatValue = data[6];
+                    const note = data[7];
+                    
+                    // Show row if it has zakat value or contains "due" in the note
+                    return zakatValue !== '-' || (note && note.includes('due'));
+                };
+                
+                // Add the filter function to DataTables
+                $.fn.dataTable.ext.search.push(this.zakatFilterFunction);
+                
+                // Add event listener that just redraws the table
+                this.domElements.filterToggle.addEventListener('change', () => {
+                    const table = $('#zakatDataTable').DataTable();
+                    if (table) table.draw();
+                });
+            }
         
         // Add download link event listeners
         this.domElements.downloadLink?.addEventListener('click', (e) => {
@@ -549,6 +576,7 @@ export class ZakatUIController {
         this.domElements.addRowButton?.addEventListener('click', () => this.showAddRowForm());
         this.domElements.saveRowButton?.addEventListener('click', () => this.saveNewRow());
         this.domElements.cancelRowButton?.addEventListener('click', () => this.hideAddRowForm());
+        this.domElements.closeFormButton?.addEventListener('click', () => this.hideAddRowForm());
 
         document.querySelectorAll('.accordion-header').forEach(header => {
             header.addEventListener('click', function() {
@@ -571,6 +599,52 @@ export class ZakatUIController {
                 icon.classList.toggle('fa-chevron-up', !expanded);
             });
         });
+   
+           // Setup filter toggle with DataTables API
+           if (this.domElements.filterToggle) {
+            // Store the filter function as a property of the class for reference
+            this.zakatFilterFunction = (settings, data) => {
+                // Only apply to our zakat table
+                if (settings.nTable.id !== 'zakatDataTable') return true;
+                
+                // If filter is not checked, show all rows
+                if (!this.domElements.filterToggle.checked) return true;
+                
+                // Get the zakat value (column 6) and note (column 7)
+                const zakatValue = data[6];
+                const note = data[7];
+                
+                // Show row if it has zakat value or contains "due" in the note
+                return zakatValue !== '-' || (note && note.includes('due'));
+            };
+            
+            // Add event listener that toggles the filter
+            this.domElements.filterToggle.addEventListener('change', () => {
+                // Remove any existing filter first to avoid duplicates
+                console.log("Removing filter...");
+                $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(
+                    fn => fn !== this.zakatFilterFunction
+                );
+                
+                // Add the filter if checked
+                console.log("Adding filter...");
+                if (this.domElements.filterToggle.checked) {
+                    console.log("Adding filter...");
+                    $.fn.dataTable.ext.search.push(this.zakatFilterFunction);
+                }
+                
+                // Try to get the table and redraw it
+                try {
+                    const table = $('#zakatDataTable').DataTable();
+                    if (table) table.draw();
+                } catch (e) {
+                    // If table isn't initialized yet, update the UI
+                    this.updateUI();
+                }
+            });
+        }
+   
+   
     }
 
     changeLanguage(lang) {
@@ -662,15 +736,8 @@ export class ZakatUIController {
         const container = this.domElements.zakatTable;
         container.innerHTML = '';
     
-        const isFiltered = this.domElements.filterToggle?.checked || false;
-    
-        // Filter data if the toggle is checked - use more efficient filtering
-        const displayData = isFiltered
-            ? this.zakatData.filter(row => row.zakat || row.note.includes('due'))
-            : this.zakatData;
-    
-        // Create table with data
-        const table = this.createZakatTable(displayData);
+        // Create table with all data (filtering will be handled by DataTables)
+        const table = this.createZakatTable(this.zakatData);
         
         // Append table to container
         container.appendChild(table);

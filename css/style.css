@@ -1424,3 +1424,46 @@ td[data-name="note-hawl-complete-zakat-due"] {
   visibility: hidden;
   transition: var(--transition);
 }
+
+.upload-info {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  background-color: #f8f9fa;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+  margin-top: 1rem;
+  display: block;
+}
+
+.upload-info strong {
+  color: #0056b3;
+  font-weight: 600;
+}
+
+.zakat-calculations {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0056b3;
+  text-align: center;
+  margin-top: 1.5rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 2px solid #007bff;
+  display: block;
+}
+
+.download-icon-container {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.example-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #0056b3;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}

@@ -132,7 +132,7 @@
                     <div class="progress-text">0%</div>
                 </div>
 
-                <div class="upload-actions">
+                <div class="upload-actions hidden">
                     <button type="button" class="primary-button" id="processUploads" data-i18n="process-uploads">
                         <i class="fas fa-calculator"></i> Calculate Zakat
                     </button>
@@ -142,9 +142,12 @@
                 </div>
 
                 <div id="fileFormatHelp" class="file-upload-info">
-                    <p data-i18n="upload-format-info">Upload your financial data in JSON, Excel, or CSV format.</p>
-                    <p data-i18n="excel-upload-info">For Excel files, ensure columns match the required format.</p>
-
+                    <p class="upload-info" data-i18n="upload-format-info">
+                        <strong>Upload your financial data</strong> in JSON, Excel, or CSV format.
+                    </p>
+                    <p class="upload-info" data-i18n="excel-upload-info">
+                        For Excel files, ensure columns match the required format.
+                    </p>
                     <details class="file-upload-example">
                         <summary>
                             <span class="content-container">
@@ -153,8 +156,11 @@
                                     <span class="summary-text" data-i18n="example-format-summary">View Example Format</span>
                                 </span>
                                 <span class="download-icon-container">
-                                    <a href="#" id="downloadLink" class="example-link">
-                                        <i class="fas fa-download"></i> <span data-i18n="download-json">JSON</span>
+                                    <a href="#" id="downloadJsonLink" class="example-link">
+                                        <i class="fas fa-file-code"></i> <span data-i18n="download-json">JSON</span>
+                                    </a>
+                                    <a href="#" id="downloadCsvLink" class="example-link">
+                                        <i class="fas fa-file-csv"></i> <span data-i18n="download-csv-template">CSV</span>
                                     </a>
                                     <a href="#" id="downloadExcelLink" class="example-link">
                                         <i class="fas fa-file-excel"></i> <span data-i18n="download-excel-template">Excel</span>
