@@ -686,9 +686,172 @@ export class ZakatUIController {
         }
     }
 
+    updateZakatChart() {
+        // Get the chart canvas element
+        const chartCanvas = document.getElementById('zakatChart');
+        if (!chartCanvas) return;
+        
+        // If no data is available, clear the chart
+        if (!this.zakatData || this.zakatData.length === 0) {
+            if (this.zakatChart) {
+                this.zakatChart.destroy();
+                this.zakatChart = null;
+            }
+            return;
+        }
+        
+        // Prepare data for the chart
+        const labels = this.zakatData.map(item => item.date);
+        const amountData = this.zakatData.map(item => item.amount);
+        const nisabData = this.zakatData.map(item => item.nisab);
+        const zakatData = this.zakatData.map(item => item.zakat || 0);
+        
+        // Define chart data
+        const chartData = {
+            labels: labels,
+            datasets: [
+                {
+                    label: this.languageManager.translate('amount') || 'Amount',
+                    data: amountData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: this.languageManager.translate('nisab') || 'Nisab',
+                    data: nisabData,
+                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: this.languageManager.translate('zakat') || 'Zakat',
+                    data: zakatData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }
+            ]
+        };
+        
+        // Chart configuration
+        const chartConfig = {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'EUR'
+                                    }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: this.languageManager.translate('date') || 'Date'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: this.languageManager.translate('amount') || 'Amount (€)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('en-US', {
+                                    style: 'currency',
+                                    currency: 'EUR',
+                                    maximumFractionDigits: 0
+                                }).format(value);
+                            }
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: this.languageManager.translate('zakat') || 'Zakat (€)'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('en-US', {
+                                    style: 'currency',
+                                    currency: 'EUR',
+                                    maximumFractionDigits: 0
+                                }).format(value);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        
+        // If chart already exists, update it, otherwise create a new one
+        if (this.zakatChart) {
+            this.zakatChart.data = chartData;
+            this.zakatChart.options = chartConfig.options;
+            this.zakatChart.update();
+        } else {
+            // Create new chart
+            this.zakatChart = new Chart(chartCanvas, chartConfig);
+        }
+        
+        // Update summary values
+        this.updateSummaryValues();
+    }
+
+    updateSummaryValues() {
+        const totalZakatElement = document.getElementById('totalZakatValue');
+        if (totalZakatElement) {
+            const totalZakat = this.zakatData.reduce((sum, item) => sum + (item.zakat || 0), 0);
+            totalZakatElement.textContent = this.formatCurrency(totalZakat);
+        }
+        
+        // You can add more summary updates here if needed
+    }
+
     updateUI() {
         this.generateZakatTable();
         this.generateNisabTable();
+        this.updateZakatChart();
 
         if (!this.zakatData || this.zakatData.length === 0) {
             // Hide filter toggle when there's no data
