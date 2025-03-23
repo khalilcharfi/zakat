@@ -640,6 +640,17 @@ setupLanguageDropdownListener() {
         if (this.zakatData.length > 0) {
             this.updateUI();
         }
+
+        if (lang === 'ar') {
+            document.documentElement.dir = 'rtl';
+            document.body.dir = 'rtl';
+            if (!document.getElementById('arabicFont')) {
+                this.loadArabicFont();
+            }
+        } else {
+            document.documentElement.dir = 'ltr';
+            document.body.dir = 'ltr';
+        }
     }
 
     // Add validation method

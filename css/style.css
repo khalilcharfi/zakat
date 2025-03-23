@@ -1603,3 +1603,72 @@ td[data-name="note-hawl-complete-zakat-due"] {
 .language-options button:hover {
   background-color: var(--secondary-color);
 }
+
+/* RTL Support */
+html[dir="rtl"] .app-header {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .language-options {
+  left: 0;
+  right: auto;
+}
+
+html[dir="rtl"] .summary-card {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .summary-data {
+  align-items: flex-end;
+}
+
+html[dir="rtl"] .form-actions {
+  justify-content: flex-start;
+}
+
+html[dir="rtl"] .input-with-icon .fa-calendar-alt {
+  right: auto;
+  left: 0.75rem;
+}
+
+html[dir="rtl"] .currency-input .input-with-icon input {
+  padding-left: 0.75rem;
+  padding-right: 2rem;
+}
+
+html[dir="rtl"] .currency-symbol {
+  left: auto;
+  right: 0.75rem;
+}
+
+html[dir="rtl"] .close-form-button {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+html[dir="rtl"] .table-controls {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .dataTables_filter {
+  text-align: left;
+}
+
+html[dir="rtl"] .dataTables_info {
+  text-align: right;
+}
+
+/* Fix DataTables RTL issues */
+html[dir="rtl"] .dataTable th,
+html[dir="rtl"] .dataTable td {
+  text-align: right;
+}
+
+html[dir="rtl"] .dataTables_wrapper .dataTables_paginate {
+  text-align: left;
+}
+
+html[dir="rtl"] .dataTables_wrapper .dataTables_paginate .paginate_button {
+  float: right;
+}
+

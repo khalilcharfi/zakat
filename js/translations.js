@@ -42,10 +42,22 @@ const translations = {
         'excel-parsing-error': 'Error parsing Excel file. Please check the format.',
         "download-error":  "Error downloading example file. Please try again.",
         // Add Dropzone translations
-        "dropzone-message": "Drag and drop files here or click to browse",
-        "dropzone-remove": "Remove file",
-        "dropzone-error": "Error processing file",
-        "dropzone-success": "File processed successfully"
+        "drag-drop-text": "Drag and drop your files here",
+        "or-browse-text": "or browse your files",
+        "browse-files": "Browse Files",
+        // FAQ and Help section translations
+        'help-section-title': 'Help & FAQs',
+        'faq-what-is-zakat': 'What is Zakat?',
+        'faq-what-is-zakat-answer': 'Zakat is a form of alms-giving or charity in Islam, considered a religious obligation or tax, and is one of the Five Pillars of Islam.',
+        'faq-how-calculated': 'How is Zakat calculated?',
+        'faq-how-calculated-answer': 'Zakat is calculated as 2.5% of a person’s savings and assets that exceed the Nisab threshold after one full lunar year (Hawl).',
+        'faq-data-privacy': 'What is your data privacy policy?',
+        'faq-data-privacy-answer': 'We respect your privacy and ensure that your financial data is kept secure and only used for the purpose of Zakat calculation.',
+        // Nisab info translation
+        'nisab-info': 'The Nisab is the minimum amount of wealth a Muslim must possess before they are obligated to pay Zakat. It is typically based on the value of 85 grams of gold or its equivalent in other assets.',
+        // Total Zakat and Next Due Date translations
+        'total-zakat': 'Total Zakat Due',
+        'next-due-date': 'Next Due Date'
     },
     fr: {
         'filter-zakat-due': 'Afficher uniquement les lignes avec une date d\'échéance ou un zakat éligible',
@@ -83,7 +95,25 @@ const translations = {
         'invalid-interest': 'L\'intérêt doit être zéro ou plus',
         'save': 'Enregistrer',
         'cancel': 'Annuler',
-        "download-error": "Erreur lors du téléchargement du fichier d'exemple. Veuillez réessayer."
+        "download-error": "Erreur lors du téléchargement du fichier d'exemple. Veuillez réessayer.",
+        "download-excel-template": "Télécharger le modèle Excel",
+        "excel-upload-info": "Vous pouvez également télécharger des fichiers Excel (.xlsx, .xls) avec les colonnes : Date, Montant et Intérêt",
+        "excel-parsing-error": "Erreur lors de l'analyse du fichier Excel. Veuillez vérifier le format.",
+        "showing_entries": "Affichage de _START_ à _END_ sur _TOTAL_ enregistrements",
+        "showing_0_entries": "Affichage de 0 à 0 sur 0 enregistrements",
+        // FAQ and Help section translations
+        'help-section-title': 'Aide & FAQ',
+        'faq-what-is-zakat': 'Qu\'est-ce que la Zakat ?',
+        'faq-what-is-zakat-answer': 'La Zakat est une forme de charité dans l\'islam, considérée comme une obligation religieuse ou une taxe, et c\'est l\'un des Cinq Piliers de l\'Islam.',
+        'faq-how-calculated': 'Comment la Zakat est-elle calculée ?',
+        'faq-how-calculated-answer': 'La Zakat est calculée à 2,5 % des économies et des biens d\'une personne qui dépassent le seuil du Nisab après une année lunaire complète (Hawl).',
+        'faq-data-privacy': 'Quelle est votre politique de confidentialité des données ?',
+        'faq-data-privacy-answer': 'Nous respectons votre vie privée et nous assurons que vos données financières sont sécurisées et utilisées uniquement dans le but du calcul de la Zakat.',
+        // Nisab info translation
+        'nisab-info': 'Le Nisab est le montant minimum de richesse qu\'un musulman doit posséder avant d\'être obligé de payer la Zakat. Il est généralement basé sur la valeur de 85 grammes d\'or ou son équivalent en d\'autres actifs.',
+        // Total Zakat and Next Due Date translations
+        'total-zakat': 'Zakat Totale Due',
+        'next-due-date': 'Prochaine Date d\'Échéance'
     },
     ar: {
         'filter-zakat-due': 'عرض الصفوف التي تحتوي على تاريخ استحقاق أو زكاة مستحقة فقط',
@@ -103,7 +133,7 @@ const translations = {
         "nisab-eur": "النصاب (€)",
         "above-nisab-hawl-begins": "فوق النصاب. يبدأ الحول.",
         "hawl-continues": "يستمر الحول.",
-        "hawl-complete-zakat-due": "اكتمل الحول. الزكاة مستحقة منذ  {date}",
+        "hawl-complete-zakat-due": "اكتمل الحول. الزكاة مستحقة منذ {date}",
         "below-nisab": "أقل من النصاب. تمت إعادة تعيين الحول.",
         "error-loading-data": "خطأ في تحميل ملفات البيانات",
         "loading": "جارٍ تحميل البيانات...",
@@ -115,16 +145,60 @@ const translations = {
         'upload-section-title': 'تحميل البيانات المالية',
         'example-format-summary': 'عرض نموذج التنسيق',
         'upload-data-prompt': 'يرجى تحميل ملف البيانات المالية لبدء الحسابات.',
-        ar: {
-            "download-error": "خطأ في تنزيل ملف المثال. يرجى المحاولة مرة أخرى",
-            'add-new-entry': 'إضافة صف جديد',
-            // Add Dropzone translations
-            "dropzone-message": "اسحب وأفلت الملفات هنا أو انقر للتصفح",
-            "dropzone-remove": "إزالة الملف",
-            "dropzone-error": "خطأ في معالجة الملف",
-            "dropzone-success": "تمت معالجة الملف بنجاح"
-        }
-    }
+        "download-error": "خطأ في تنزيل ملف المثال. يرجى المحاولة مرة أخرى",
+        'add-new-entry': 'إضافة صف جديد',
+        // FAQ and Help section translations
+        'help-section-title': 'المساعدة والأسئلة الشائعة',
+        'faq-what-is-zakat': 'ما هي الزكاة؟',
+        'faq-what-is-zakat-answer': 'الزكاة هي شكل من أشكال الصدقة في الإسلام، وتعتبر فرضًا دينيًا أو ضريبة، وهي إحدى أركان الإسلام الخمسة.',
+        'faq-how-calculated': 'كيف يتم حساب الزكاة؟',
+        'faq-how-calculated-answer': 'يتم حساب الزكاة بنسبة 2.5% من المدخرات والممتلكات التي تتجاوز النصاب بعد مرور سنة قمرية كاملة (حول).',
+        'faq-data-privacy': 'ما هي سياسة خصوصية البيانات الخاصة بك؟',
+        'faq-data-privacy-answer': 'نحن نحترم خصوصيتك ونتأكد من أن بياناتك المالية آمنة وتستخدم فقط لأغراض حساب الزكاة.',
+        // Nisab info translation
+        'nisab-info': 'النصاب هو الحد الأدنى للثروة التي يجب على المسلم امتلاكها قبل أن يصبح ملزمًا بدفع الزكاة. يتم عادةً حسابه استنادًا إلى قيمة 85 جرامًا من الذهب أو ما يعادله من الأصول الأخرى.',
+        // Total Zakat and Next Due Date translations
+        'total-zakat': 'إجمالي الزكاة المستحقة',
+        'next-due-date': 'تاريخ الاستحقاق التالي',
+        "excel-upload-info": "يمكنك أيضًا تحميل ملفات Excel (.xlsx,.xls) مع الأعمدة: التاريخ، المبلغ و الفائدة",
+        "excel-parsing-error": "خطأ في تحليل ملف Excel. يرجى التحقق من التنسيق.",
+        "showing_entries": "إظهار _START_ إلى _END_ من _TOTAL_ سجل",
+        "showing_0_entries": "إظهار 0 إلى 0 من 0 سجل",
+        "accepted-formats": "تنسيقات مسموح بها: JSON, Excel (xlsx, xls)",
+        "invalid-file-type": "الملف غير مدعوم. يرجى تحميل ملف JSON أو Excel.",
+        "invalid-file-format": "تنسيق الملف غير صالح. يرجى التحقق من التنسيق.",
+        "upload-instructions": "يرجى رفع ملف JSON أو Excel يحتوي على بياناتك المالية.",
+        "upload-button": "رفع الملف",
+        "upload-success": "تم رفع الملف بنجاح.",
+        "upload-error": "حدث خطأ أثناء رفع الملف. يرجى المحاولة مرة أخرى.",
+        "upload-file-size-limit": "حجم الملف كبير جدًا. يرجى تحميل ملف أصغر.",
+        "upload-file-type-limit": "نوع الملف غير مدعوم. يرجى تحميل ملف JSON أو Excel.",
+        "upload-file-type-error": "نوع الملف غير مدعوم. يرجى تحميل ملف JSON أو Excel.",
+        "upload-file-size-error": "حجم الملف كبير جدًا. يرجى تحميل ملف أصغر.",
+        "upload-file-invalid-error": "الملف غير صالح. يرجى التحقق من التنسيق.",
+        "upload-file-parse-error": "حدث خطأ أثناء تحليل الملف. يرجى التحقق من التنسيق.",
+        "upload-file-upload-error": "حدث خطأ أثناء رفع الملف. يرجى المحاولة مرة أخرى.",
+        "upload-file-upload-success": "تم رفع الملف بنجاح.",
+        "upload-file-upload-failed": "فشل رفع الملف. يرجى المحاولة مرة أخرى.",
+        "upload-file-upload-cancelled": "تم إلغاء رفع الملف.",
+        "upload-file-upload-aborted": "تم إلغاء رفع الملف.",
+        "upload-file-upload-timeout": "تم إلغاء رفع الملف.",
+        "upload-file-upload-complete": "تم رفع الملف بنجاح.",
+        "upload-file-upload-progress": "تم رفع الملف بنجاح.",
+        "upload-file-upload-error-message": "حدث خطأ أثناء رفع الملف. يرجى المحاولة مرة أخرى.",
+        "upload-file-upload-success-message": "تم رفع الملف بنجاح.",
+        "upload-file-upload-failed-message": "فشل رفع الملف. يرجى المحاولة مرة أخرى.",
+        "upload-file-upload-cancelled-message": "تم إلغاء رفع الملف.",
+        "upload-file-upload-aborted-message": "تم إلغاء رفع الملف.",
+        "upload-file-upload-timeout-message": "تم إلغاء رفع الملف.",
+        "upload-file-upload-complete-message": "تم رفع الملف بنجاح.",
+         "drag-drop-text": "قم بالسحب والإسقاط هنا",
+         "or-browse-text": "أو قم بالتصفح",
+        "download-csv-template": "تحميل قالب CSV",
+        "download-excel-template": "تحميل قالب Excel",
+        "download-pdf-template": "تحميل قالب PDF",
+        "download-json": "تحميل ملف JSON",
+       }
 };
 
 export default translations;
