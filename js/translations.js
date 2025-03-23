@@ -74,6 +74,7 @@ const translations = {
         "zakat": "Zakat",
         "notes": "Remarques",
         "year": "Année",
+        "browse-files": "Parcourir les fichiers",
         "nisab-eur": "Nisab (€)",
         "above-nisab-hawl-begins": "Au-dessus du Nisab. Le Hawl commence.",
         "hawl-continues": "Le Hawl continue.",
@@ -194,7 +195,8 @@ const translations = {
         "download-csv-template": "تحميل نموذج CSV",
         "download-excel-template": "تحميل نموذج Excel",
         "download-pdf-template": "تحميل نموذج PDF",
-        "download-json": "تحميل ملف JSON"
+        "download-json": "تحميل ملف JSON",
+         "browse-files": "تصفح الملفات"
     }
 };
 
