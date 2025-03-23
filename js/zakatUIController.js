@@ -34,6 +34,7 @@ const CONFIG = {
 
 // DOM element IDs
 const DOM_IDS = {
+    DOWNLOAD_JSON_LINK: 'downloadJsonLink',
     ZAKAT_TABLE: 'zakatTable',
     NISAB_TABLE: 'nisabTable',
     LANGUAGE_SELECT: 'languageSelect',
@@ -455,6 +456,7 @@ export class ZakatUIController {
             filterToggle: document.getElementById(DOM_IDS.FILTER_TOGGLE),
             toolbarContainer: document.querySelector(DOM_IDS.TOOLBAR_CONTAINER),
             uploadButton: document.querySelector('.file-upload button'),
+            downloadJsonLink: document.getElementById(DOM_IDS.DOWNLOAD_JSON_LINK), // Added downloadJsonLink element
             fileInput: document.getElementById(DOM_IDS.FILE_INPUT),
             apiNote: document.querySelector(DOM_IDS.API_NOTE),
             downloadLink: document.getElementById(DOM_IDS.DOWNLOAD_LINK),
@@ -475,176 +477,141 @@ export class ZakatUIController {
         };
     }
 
-    // Method to initialize DataTable with configurable options
-    initializeDataTable(tableId, enablePaging = true) {
-        const table = $(`#${tableId}`);
-        if (table.length) {
-            // Apply table configuration with any custom options
-            const tableConfig = {
-                ...this.options.tableConfig,
-                paging: enablePaging
-            };
+    setupEventListeners() {
+        this.setupLanguageSelectListener();
+        this.setupFileInputListener();
+        this.setupFilterToggleListener();
+        this.setupDownloadLinksListeners();
+        this.setupRowFormListeners();
+        this.setupAccordionHeadersListener();
+        
+    }
+    
+// Add this method to the ZakatUIController class
+
+setupLanguageDropdownListener() {
+    const languageButton = document.querySelector('.language-button');
+    const languageOptions = document.querySelector('.language-options');
+    
+    if (languageButton && languageOptions) {
+      // Toggle language options when button is clicked
+      languageButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        languageOptions.classList.toggle('show');
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!languageButton.contains(e.target) && !languageOptions.contains(e.target)) {
+          languageOptions.classList.remove('show');
+        }
+      });
+      
+      // Handle language selection
+      const languageOptionButtons = languageOptions.querySelectorAll('button');
+      languageOptionButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+          const lang = e.target.getAttribute('data-lang');
+          if (lang) {
+            this.changeLanguage(lang);
             
-            // Add language-specific configurations
-            if (this.languageManager) {
-                const currentLang = this.languageManager.currentLanguage;
-                tableConfig.language = {
-                    ...tableConfig.language,
-                    searchPlaceholder: this.languageManager.translate('search') || "Search...",
-                    paginate: {
-                        first: this.languageManager.translate('first') || "First",
-                        last: this.languageManager.translate('last') || "Last",
-                        next: this.languageManager.translate('next') || "Next",
-                        previous: this.languageManager.translate('previous') || "Previous"
-                    }
-                };
-                
-                // Set RTL for Arabic
-                if (currentLang === 'ar') {
-                    tableConfig.direction = 'rtl';
-                }
+            // Update button text to show selected language
+            const langText = e.target.textContent;
+            const buttonText = languageButton.querySelector('.language-text');
+            if (buttonText) {
+              buttonText.textContent = langText;
             }
             
-            // Initialize the DataTable
-            table.DataTable(tableConfig);
-        }
+            // Hide dropdown after selection
+            languageOptions.classList.remove('show');
+          }
+        });
+      });
     }
-
-    setupEventListeners() {
-        // Use cached DOM elements and add event listeners
-        if (this.domElements.languageSelect) {
-            this.domElements.languageSelect.addEventListener('change', (e) => {
-                if (e?.target?.value) {
-                    this.changeLanguage(e.target.value);
-                }
-            });
-        }
-
-        // Handle upload button click to trigger Dropzone
+  }
+    
+    setupFileInputListener() {
         this.domElements.fileInput?.addEventListener('click', (e) => {
             e.preventDefault();
             if (this.dropzone) {
                 this.dropzone.hiddenFileInput.click(); 
             }
         });
-
-              // Setup filter toggle with DataTables API
-              if (this.domElements.filterToggle) {
-                // Store the filter function as a property of the class
-                this.zakatFilterFunction = (settings, data) => {
-                    // Only apply to our zakat table
-                    if (settings.nTable.id !== 'zakatDataTable') return true;
-                    
-                    // If filter is not checked, show all rows
-                    if (!this.domElements.filterToggle.checked) return true;
-                    
-                    // Get the zakat value (column 6) and note (column 7)
-                    const zakatValue = data[6];
-                    const note = data[7];
-                    
-                    // Show row if it has zakat value or contains "due" in the note
-                    return zakatValue !== '-' || (note && note.includes('due'));
-                };
-                
-                // Add the filter function to DataTables
-                $.fn.dataTable.ext.search.push(this.zakatFilterFunction);
-                
-                // Add event listener that just redraws the table
-                this.domElements.filterToggle.addEventListener('change', () => {
-                    const table = $('#zakatDataTable').DataTable();
-                    if (table) table.draw();
-                });
-            }
-        
-        // Add download link event listeners
+    }
+    
+    setupFilterToggleListener() {
+        if (this.domElements.filterToggle) {
+            this.zakatFilterFunction = (settings, data) => {
+                if (settings.nTable.id !== 'zakatDataTable') return true;
+                if (!this.domElements.filterToggle.checked) return true;
+    
+                const zakatValue = data[6];
+                const note = data[7];
+    
+                console.log('Zakat Value:', zakatValue);
+                console.log('Note:', note);
+    
+                return zakatValue !== '-' || (note && note.includes('due'));
+            };
+    
+            $.fn.dataTable.ext.search.push(this.zakatFilterFunction);
+    
+            this.domElements.filterToggle.addEventListener('change', () => {
+                const table = $('#zakatDataTable').DataTable();
+                if (table) table.draw();
+            });
+        }
+    }
+    
+    setupDownloadLinksListeners() {
         this.domElements.downloadLink?.addEventListener('click', (e) => {
             e.preventDefault();
             this.downloadExampleJSON();
         });
-        
+    
         this.domElements.downloadExcelLink?.addEventListener('click', (e) => {
             e.preventDefault();
             this.downloadExampleExcel();
         });
-        
+    
         this.domElements.downloadCsvLink?.addEventListener('click', (e) => {
             e.preventDefault();
             this.downloadExampleCsv();
         });
         
-        // Add form-related event listeners directly to the cached elements
+        // Add listener for downloading current data as JSON
+        this.domElements.downloadJsonLink?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.downloadExampleJSON();
+        });
+    }
+    
+    setupRowFormListeners() {
         this.domElements.addRowButton?.addEventListener('click', () => this.showAddRowForm());
         this.domElements.saveRowButton?.addEventListener('click', () => this.saveNewRow());
         this.domElements.cancelRowButton?.addEventListener('click', () => this.hideAddRowForm());
         this.domElements.closeFormButton?.addEventListener('click', () => this.hideAddRowForm());
-
+    }
+    
+    setupAccordionHeadersListener() {
         document.querySelectorAll('.accordion-header').forEach(header => {
             header.addEventListener('click', function() {
                 const expanded = header.getAttribute('aria-expanded') === 'true';
                 const content = header.nextElementSibling;
     
-                // Toggle the aria-expanded attribute
                 header.setAttribute('aria-expanded', !expanded);
     
-                // Toggle the content visibility with smooth transition
                 if (expanded) {
                     content.style.maxHeight = null;
                 } else {
                     content.style.maxHeight = content.scrollHeight + 'px';
                 }
     
-                // Optionally, toggle the icon direction
                 const icon = header.querySelector('i');
                 icon.classList.toggle('fa-chevron-down', expanded);
                 icon.classList.toggle('fa-chevron-up', !expanded);
             });
         });
-   
-           // Setup filter toggle with DataTables API
-           if (this.domElements.filterToggle) {
-            // Store the filter function as a property of the class for reference
-            this.zakatFilterFunction = (settings, data) => {
-                // Only apply to our zakat table
-                if (settings.nTable.id !== 'zakatDataTable') return true;
-                
-                // If filter is not checked, show all rows
-                if (!this.domElements.filterToggle.checked) return true;
-                
-                // Get the zakat value (column 6) and note (column 7)
-                const zakatValue = data[6];
-                const note = data[7];
-                
-                // Show row if it has zakat value or contains "due" in the note
-                return zakatValue !== '-' || (note && note.includes('due'));
-            };
-            
-            // Add event listener that toggles the filter
-            this.domElements.filterToggle.addEventListener('change', () => {
-                // Remove any existing filter first to avoid duplicates
-                console.log("Removing filter...");
-                $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(
-                    fn => fn !== this.zakatFilterFunction
-                );
-                
-                // Add the filter if checked
-                console.log("Adding filter...");
-                if (this.domElements.filterToggle.checked) {
-                    console.log("Adding filter...");
-                    $.fn.dataTable.ext.search.push(this.zakatFilterFunction);
-                }
-                
-                // Try to get the table and redraw it
-                try {
-                    const table = $('#zakatDataTable').DataTable();
-                    if (table) table.draw();
-                } catch (e) {
-                    // If table isn't initialized yet, update the UI
-                    this.updateUI();
-                }
-            });
-        }
-   
-   
     }
 
     changeLanguage(lang) {
@@ -1008,25 +975,64 @@ export class ZakatUIController {
         this.generateZakatTable();
         this.generateNisabTable();
         this.updateZakatChart();
-
-        if (!this.zakatData || this.zakatData.length === 0) {
-            // Hide filter toggle when there's no data
-            if (this.domElements.toolbarContainer) {
-                this.domElements.toolbarContainer.classList.add('hidden');
-                this.domElements.viewButtons.forEach(button => {
-                    button.classList.add('hidden');
-                });
-            }
-        } else {
-            // Show filter toggle when we have data
-            if (this.domElements.toolbarContainer) {
-                this.domElements.toolbarContainer.classList.remove('hidden');
-                this.domElements.viewButtons.forEach(button => {
-                    button.classList.remove('hidden');
-                });
-            }
+    
+        this.toggleToolbarVisibility(this.zakatData && this.zakatData.length > 0);
+    }
+    
+    toggleToolbarVisibility(show) {
+        return;
+        if (this.domElements.toolbarContainer) {
+            this.domElements.toolbarContainer.classList.toggle('hidden', !show);
+            this.domElements.viewButtons.forEach(button => {
+                button.classList.toggle('hidden', !show);
+            });
         }
     }
+
+        // ... existing code ...
+    
+        downloadJsonLink() {
+            // Only proceed if we have data
+            if (!this.zakatData || this.zakatData.length === 0) {
+                alert(this.languageManager.translate('no-data-to-download') || 'No data available to download');
+                return;
+            }
+            
+            // Create data structure with current data
+            const currentData = {
+                monthlyData: this.calculator.getMonthlyData(),
+                nisabData: this.nisabService.getNisabData().data,
+                // Include API key if available
+                goldApiKey: this.nisabService.getApiKey() || null
+            };
+            
+            // Convert to JSON string with pretty formatting
+            const jsonString = JSON.stringify(currentData, null, 2);
+            
+            // Create a blob and download link
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            // Generate filename with date
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+            const filename = `zakat_data_${dateStr}.json`;
+            
+            // Create temporary link and trigger download
+            const tempLink = document.createElement('a');
+            tempLink.href = url;
+            tempLink.download = filename;
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            
+            // Clean up
+            document.body.removeChild(tempLink);
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+        
+        // ... existing code ...
 
     showLoadingState() {
         const loadingHTML = `<div class="loading">${this.languageManager.translate('loading')}</div>`;

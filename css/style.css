@@ -683,7 +683,6 @@
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-light);
-    cursor: pointer;
   }
   
   .currency-input .input-with-icon input {
@@ -1480,4 +1479,63 @@ td[data-name="note-hawl-complete-zakat-due"] {
 
 #nextDueDate[data-upcoming="true"] {
   color: #5cb85c;
+}
+
+/* Language Selector */
+.language-selector {
+  position: relative;
+}
+
+.language-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: var(--transition);
+}
+
+.language-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.language-options {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  width: 150px;
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  display: none;
+}
+
+.language-options.show {
+  display: block;
+}
+
+.language-options li {
+  list-style: none;
+}
+
+.language-options button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: var(--transition);
+}
+
+.language-options button:hover {
+  background-color: var(--secondary-color);
 }
