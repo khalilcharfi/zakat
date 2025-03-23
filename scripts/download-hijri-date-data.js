@@ -164,7 +164,29 @@ async function processGoldPricesAndFetchHijriDates() {
         // Extract unique dates and sort them chronologically
         let uniqueDates = [...new Set(goldPrices.map(record => record.date))];
         uniqueDates.sort((a, b) => new Date(a) - new Date(b));
-        Logger.info(`Processing ${uniqueDates.length} unique dates.`);
+        Logger.info(`Found ${uniqueDates.length} unique dates in gold price data.`);
+
+        // Extend date range to current date
+        const lastDate = uniqueDates.length > 0 ? new Date(uniqueDates[uniqueDates.length - 1]) : null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to beginning of day
+        
+        if (!lastDate || lastDate < today) {
+            Logger.info('Extending date range to current date...');
+            const additionalDates = generateDateRange(
+                lastDate ? new Date(lastDate.getTime() + 24*60*60*1000) : new Date(2015, 0, 1), // Start from day after last date or Jan 1, 2015
+                today
+            );
+            
+            if (additionalDates.length > 0) {
+                Logger.info(`Adding ${additionalDates.length} additional dates to reach current date.`);
+                uniqueDates = [...uniqueDates, ...additionalDates];
+                // Re-sort the dates
+                uniqueDates.sort((a, b) => new Date(a) - new Date(b));
+            }
+        }
+        
+        Logger.info(`Processing ${uniqueDates.length} unique dates in total.`);
 
         // Initialize results object
         const results = {};
@@ -324,6 +346,30 @@ async function processGoldPricesAndFetchHijriDates() {
     } catch (error) {
         Logger.error("Error processing gold price data:", error);
     }
+}
+
+/**
+ * Generate a range of dates between start and end dates
+ * @param {Date} startDate - Start date
+ * @param {Date} endDate - End date
+ * @returns {Array<string>} - Array of dates in YYYY-MM-DD format
+ */
+function generateDateRange(startDate, endDate) {
+    const dates = [];
+    const currentDate = new Date(startDate);
+    
+    while (currentDate <= endDate) {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        
+        dates.push(`${year}-${month}-${day}`);
+        
+        // Move to next day
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return dates;
 }
 
 /**
