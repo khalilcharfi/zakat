@@ -1430,10 +1430,15 @@ td[data-name="note-hawl-complete-zakat-due"] {
   color: #333;
   background-color: #f8f9fa;
   padding: 0.75rem 1rem;
-  border-start: 4px solid #007bff;
+  border-left: 4px solid #007bff;
   border-radius: 4px;
   margin-top: 1rem;
   display: block;
+}
+
+html[dir="rtl"] .upload-info {
+  border-left: none;
+  border-right: 4px solid #007bff;
 }
 
 .upload-info strong {
