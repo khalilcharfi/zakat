@@ -687,11 +687,9 @@ export class ZakatUIController {
     }
 
     updateZakatChart() {
-        // Get the chart canvas element
         const chartCanvas = document.getElementById('zakatChart');
         if (!chartCanvas) return;
-        
-        // If no data is available, clear the chart
+    
         if (!this.zakatData || this.zakatData.length === 0) {
             if (this.zakatChart) {
                 this.zakatChart.destroy();
@@ -700,50 +698,78 @@ export class ZakatUIController {
             return;
         }
         
-        // Prepare data for the chart
-        const labels = this.zakatData.map(item => item.date);
-        const amountData = this.zakatData.map(item => item.amount);
-        const nisabData = this.zakatData.map(item => item.nisab);
-        const zakatData = this.zakatData.map(item => item.zakat || 0);
+        // Optimize data extraction with a single loop instead of multiple map() calls
+        const labels = [];
+        const amountData = [];
+        const nisabData = [];
+        const zakatData = [];
+        const interestData = []; // Add interest data for better insights
         
-        // Define chart data
+        // Process data in a single loop for better performance
+        this.zakatData.forEach(item => {
+            labels.push(item.date);
+            amountData.push(item.amount);
+            nisabData.push(item.nisab);
+            zakatData.push(item.zakat || 0);
+            interestData.push(item.interest || 0);
+        });
+    
         const chartData = {
             labels: labels,
             datasets: [
                 {
+                    type: 'bar',
                     label: this.languageManager.translate('amount') || 'Amount',
                     data: amountData,
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
                     borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    yAxisID: 'y'
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                    order: 2 // Lower order appears behind
                 },
                 {
+                    type: 'bar',
+                    label: this.languageManager.translate('interest') || 'Interest',
+                    data: interestData,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                    stack: 'stack0', // Stack with amount if needed
+                    order: 1
+                },
+                {
+                    type: 'line',
                     label: this.languageManager.translate('nisab') || 'Nisab',
                     data: nisabData,
-                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
                     borderColor: 'rgba(255, 159, 64, 1)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
                     borderWidth: 2,
                     borderDash: [5, 5],
                     tension: 0.4,
-                    yAxisID: 'y'
+                    yAxisID: 'y',
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    order: 0 // Higher order appears in front
                 },
                 {
+                    type: 'line',
                     label: this.languageManager.translate('zakat') || 'Zakat',
                     data: zakatData,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     borderWidth: 2,
                     tension: 0.4,
-                    yAxisID: 'y1'
+                    yAxisID: 'y1',
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    order: 0
                 }
             ]
         };
-        
-        // Chart configuration
+    
         const chartConfig = {
-            type: 'line',
+            type: 'bar',
             data: chartData,
             options: {
                 responsive: true,
@@ -752,14 +778,16 @@ export class ZakatUIController {
                     mode: 'index',
                     intersect: false,
                 },
+                animation: {
+                    duration: 1000, // Smoother animation
+                    easing: 'easeOutQuart'
+                },
                 plugins: {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
                                 let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
+                                if (label) label += ': ';
                                 if (context.parsed.y !== null) {
                                     label += new Intl.NumberFormat('en-US', {
                                         style: 'currency',
@@ -767,18 +795,57 @@ export class ZakatUIController {
                                     }).format(context.parsed.y);
                                 }
                                 return label;
+                            },
+                            // Add footer to show percentage of nisab
+                            footer: function(tooltipItems) {
+                                const dataIndex = tooltipItems[0].dataIndex;
+                                const amount = amountData[dataIndex];
+                                const nisab = nisabData[dataIndex];
+                                if (amount && nisab) {
+                                    const percentage = (amount / nisab * 100).toFixed(1);
+                                    return `${percentage}% of Nisab threshold`;
+                                }
+                                return '';
                             }
                         }
                     },
                     legend: {
                         position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15
+                        }
+                    },
+                    // Add annotation to highlight when amount crosses nisab threshold
+                    annotation: {
+                        annotations: {
+                            thresholdLine: {
+                                type: 'line',
+                                yMin: 0,
+                                yMax: 0,
+                                borderColor: 'rgba(255, 0, 0, 0.5)',
+                                borderWidth: 2,
+                                borderDash: [6, 6],
+                                label: {
+                                    display: true,
+                                    content: this.languageManager.translate('nisab_threshold') || 'Nisab Threshold',
+                                    position: 'start'
+                                }
+                            }
+                        }
                     }
                 },
                 scales: {
                     x: {
                         title: {
                             display: true,
-                            text: this.languageManager.translate('date') || 'Date'
+                            text: this.languageManager.translate('date') || 'Date',
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false
                         }
                     },
                     y: {
@@ -787,7 +854,10 @@ export class ZakatUIController {
                         position: 'left',
                         title: {
                             display: true,
-                            text: this.languageManager.translate('amount') || 'Amount (€)'
+                            text: this.languageManager.translate('amount') || 'Amount (€)',
+                            font: {
+                                weight: 'bold'
+                            }
                         },
                         ticks: {
                             callback: function(value) {
@@ -797,7 +867,8 @@ export class ZakatUIController {
                                     maximumFractionDigits: 0
                                 }).format(value);
                             }
-                        }
+                        },
+                        beginAtZero: true
                     },
                     y1: {
                         type: 'linear',
@@ -805,7 +876,10 @@ export class ZakatUIController {
                         position: 'right',
                         title: {
                             display: true,
-                            text: this.languageManager.translate('zakat') || 'Zakat (€)'
+                            text: this.languageManager.translate('zakat') || 'Zakat (€)',
+                            font: {
+                                weight: 'bold'
+                            }
                         },
                         grid: {
                             drawOnChartArea: false,
@@ -818,34 +892,116 @@ export class ZakatUIController {
                                     maximumFractionDigits: 0
                                 }).format(value);
                             }
-                        }
+                        },
+                        beginAtZero: true
                     }
                 }
             }
         };
         
-        // If chart already exists, update it, otherwise create a new one
+        // Update annotation threshold line position based on average nisab
+        if (nisabData.length > 0) {
+            const avgNisab = nisabData.reduce((sum, val) => sum + val, 0) / nisabData.length;
+            if (chartConfig.options.plugins.annotation && 
+                chartConfig.options.plugins.annotation.annotations.thresholdLine) {
+                chartConfig.options.plugins.annotation.annotations.thresholdLine.yMin = avgNisab;
+                chartConfig.options.plugins.annotation.annotations.thresholdLine.yMax = avgNisab;
+            }
+        }
+    
         if (this.zakatChart) {
             this.zakatChart.data = chartData;
             this.zakatChart.options = chartConfig.options;
             this.zakatChart.update();
         } else {
-            // Create new chart
             this.zakatChart = new Chart(chartCanvas, chartConfig);
         }
-        
-        // Update summary values
+    
         this.updateSummaryValues();
     }
 
     updateSummaryValues() {
-        const totalZakatElement = document.getElementById('totalZakatValue');
-        if (totalZakatElement) {
-            const totalZakat = this.zakatData.reduce((sum, item) => sum + (item.zakat || 0), 0);
-            totalZakatElement.textContent = this.formatCurrency(totalZakat);
+        const totalZakatValue = document.getElementById('totalZakatValue');
+        const nextDueDate = document.getElementById('nextDueDate');
+    
+        if (this.zakatData && this.zakatData.length > 0) {
+            // Calculate total zakat
+            const totalZakat = this.zakatData.reduce((acc, item) => acc + (item.zakat || 0), 0);
+            
+            // Format the currency
+            totalZakatValue.textContent = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'EUR',
+                maximumFractionDigits: 2
+            }).format(totalZakat);
+    
+            // Find the next due date - look for the first future due date
+            const today = new Date();
+            let nextDueDateValue = null;
+            
+            // Sort data by due date if available
+            const itemsWithDueDate = this.zakatData
+                .filter(item => item.nextDueDate)
+                .sort((a, b) => {
+                    const dateA = this.dateConverter.parseDate(a.nextDueDate);
+                    const dateB = this.dateConverter.parseDate(b.nextDueDate);
+                    return dateA - dateB;
+                });
+            
+            // Find the first future due date
+            for (const item of itemsWithDueDate) {
+                const dueDate = this.dateConverter.parseDate(item.nextDueDate);
+                if (dueDate && dueDate >= today) {
+                    nextDueDateValue = item.nextDueDate;
+                    break;
+                }
+            }
+            
+            // If no future due date found, use the most recent one
+            if (!nextDueDateValue && itemsWithDueDate.length > 0) {
+                nextDueDateValue = itemsWithDueDate[itemsWithDueDate.length - 1].nextDueDate;
+            }
+            
+            // Update the display
+            if (nextDueDateValue) {
+                nextDueDate.textContent = nextDueDateValue;
+                
+                // Add data attributes for styling based on due date proximity
+                const dueDate = this.dateConverter.parseDate(nextDueDateValue);
+                if (dueDate) {
+                    const daysUntilDue = Math.floor((dueDate - today) / (24 * 60 * 60 * 1000));
+                    
+                    // Remove any existing status classes
+                    nextDueDate.removeAttribute('data-approaching');
+                    nextDueDate.removeAttribute('data-overdue');
+                    nextDueDate.removeAttribute('data-upcoming');
+                    
+                    // Add appropriate status class
+                    if (daysUntilDue < 0) {
+                        nextDueDate.setAttribute('data-overdue', 'true');
+                        nextDueDate.title = this.languageManager.translate('overdue') || 'Overdue';
+                    } else if (daysUntilDue <= 30) {
+                        nextDueDate.setAttribute('data-approaching', 'true');
+                        nextDueDate.title = this.languageManager.translate('approaching') || 'Due soon';
+                    } else {
+                        nextDueDate.setAttribute('data-upcoming', 'true');
+                        nextDueDate.title = this.languageManager.translate('upcoming') || 'Upcoming';
+                    }
+                }
+            } else {
+                nextDueDate.textContent = '--/--/----';
+                nextDueDate.removeAttribute('data-approaching');
+                nextDueDate.removeAttribute('data-overdue');
+                nextDueDate.removeAttribute('data-upcoming');
+            }
+        } else {
+            // Handle the case when no data is available
+            totalZakatValue.textContent = '€0.00';
+            nextDueDate.textContent = '--/--/----';
+            nextDueDate.removeAttribute('data-approaching');
+            nextDueDate.removeAttribute('data-overdue');
+            nextDueDate.removeAttribute('data-upcoming');
         }
-        
-        // You can add more summary updates here if needed
     }
 
     updateUI() {

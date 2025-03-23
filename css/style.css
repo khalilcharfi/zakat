@@ -1467,3 +1467,17 @@ td[data-name="note-hawl-complete-zakat-due"] {
   font-weight: 500;
   transition: color 0.3s ease;
 }
+
+#nextDueDate[data-overdue="true"] {
+  color: #d9534f;
+  font-weight: bold;
+}
+
+#nextDueDate[data-approaching="true"] {
+  color: #f0ad4e;
+  font-weight: bold;
+}
+
+#nextDueDate[data-upcoming="true"] {
+  color: #5cb85c;
+}
