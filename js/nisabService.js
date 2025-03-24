@@ -2,6 +2,8 @@ import { CacheManager } from './cacheManager.js';
 
 export class NisabService {
     static API_ENDPOINT = 'https://www.goldapi.io/api/XAU/EUR';
+    static LOCAL_DATA_URL = '../data/gold-price-data.json';
+    static GITHUB_DATA_URL = 'https://raw.githubusercontent.com/khalilcharfi/zakat/main/data/gold-price-data.json';
     static MAX_RETRIES = 2;
     static RETRY_DELAY = 1000;
 
@@ -16,6 +18,11 @@ export class NisabService {
         this.isFromApi = cachedData.fromApi || false;
         this.goldApiKey = '';
         this.pendingRequests = new Map();
+        
+        // Load gold price data on initialization
+        this.loadGoldPriceData().catch(err => {
+            console.warn('Failed to load initial gold price data:', err.message);
+        });
     }
 
     setApiKey(apiKey) {
@@ -41,15 +48,15 @@ export class NisabService {
             // Try local first, fallback to GitHub if not found
             let response;
             try {
-                response = await fetch('../data/gold-price-data.json');
+                response = await fetch(NisabService.LOCAL_DATA_URL);
                 if (!response.ok) throw new Error(`Local file error: ${response.status}`);
+                console.log('Using local gold price data');
             } catch (localError) {
-                console.log('Using GitHub gold price data');
-                response = await fetch('https://raw.githubusercontent.com/khalilcharfi/zakat/main/data/gold-price-data.json');
-            }
-            
-            if (!response.ok) {
-                throw new Error(`Failed to fetch gold price data: ${response.status}`);
+                console.log('Local gold price data not available, using GitHub data');
+                response = await fetch(NisabService.GITHUB_DATA_URL);
+                if (!response.ok) {
+                    throw new Error(`GitHub data error: ${response.status}`);
+                }
             }
             
             const goldPriceData = await response.json();
@@ -57,26 +64,52 @@ export class NisabService {
             // Process the gold price data to calculate nisab values
             // Group by year and calculate average price per year
             const yearlyPrices = {};
+            const monthlyPrices = {};
             
-            goldPriceData.forEach(entry => {
-                const year = entry.date.split('-')[0];
+            // Handle both array and object formats
+            const entries = Array.isArray(goldPriceData) 
+                ? goldPriceData 
+                : Object.values(goldPriceData);
+            
+            entries.forEach(entry => {
+                const dateParts = entry.date.split('-');
+                const year = dateParts[0];
+                const month = dateParts[1];
                 const price = parseFloat(entry.price);
                 
+                // For yearly averages
                 if (!yearlyPrices[year]) {
                     yearlyPrices[year] = { sum: 0, count: 0 };
                 }
-                
                 yearlyPrices[year].sum += price;
                 yearlyPrices[year].count++;
+                
+                // For monthly averages
+                const yearMonth = `${year}-${month}`;
+                if (!monthlyPrices[yearMonth]) {
+                    monthlyPrices[yearMonth] = { sum: 0, count: 0 };
+                }
+                monthlyPrices[yearMonth].sum += price;
+                monthlyPrices[yearMonth].count++;
             });
             
             // Calculate nisab values (85 grams of gold)
+            // For yearly averages
             for (const year in yearlyPrices) {
                 const averagePrice = yearlyPrices[year].sum / yearlyPrices[year].count;
                 const nisabValue = averagePrice * 85; // 85 grams of gold for nisab
                 
                 // Round to 2 decimal places
                 this.nisabData[year] = Math.round(nisabValue * 100) / 100;
+            }
+            
+            // For monthly averages
+            for (const yearMonth in monthlyPrices) {
+                const averagePrice = monthlyPrices[yearMonth].sum / monthlyPrices[yearMonth].count;
+                const nisabValue = averagePrice * 85; // 85 grams of gold for nisab
+                
+                // Round to 2 decimal places
+                this.nisabData[yearMonth] = Math.round(nisabValue * 100) / 100;
             }
             
             this.isFromApi = false;
