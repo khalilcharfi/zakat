@@ -2,6 +2,7 @@ import { CacheManager } from './cacheManager.js';
 
 export class DateConverter {
     static API_ENDPOINT = 'https://api.aladhan.com/v1/gToH';
+    static LOCAL_DATA_URL = 'https://raw.githubusercontent.com/khalilcharfi/zakat/refs/heads/main/data/hijri-dates.json';
     static MAX_RETRIES = 4;
     static RATE_LIMIT_DELAY = 600;
     static RATE_LIMIT_WINDOW = 1000;
@@ -19,12 +20,71 @@ export class DateConverter {
         this.requestQueue = [];
         this.isProcessing = false;
         this.rateLimitedUntil = 0;
+        this.localDataLoaded = false;
+        this.localData = {};
+        
+        // Load local data on initialization
+        this.loadLocalData();
+    }
+    
+    async loadLocalData() {
+        try {
+            const response = await fetch(DateConverter.LOCAL_DATA_URL);
+            if (response.ok) {
+                this.localData = await response.json();
+                this.localDataLoaded = true;
+                console.log('Loaded Hijri dates from local data source');
+            } else {
+                console.warn('Failed to load local Hijri dates data');
+            }
+        } catch (error) {
+            console.error('Error loading local Hijri dates:', error);
+        }
+    }
+    
+    getDateFromLocalData(gregDate) {
+        if (!this.localDataLoaded) return null;
+        
+        // Convert MM/YYYY to YYYY-MM-DD format for lookup
+        const [month, year] = gregDate.split('/');
+        
+        // Try to find the first day of the month first
+        const firstDayKey = `${year}-${month.padStart(2, '0')}-01`;
+        
+        // If first day isn't available, try to find any day in that month
+        if (!this.localData[firstDayKey]) {
+            // Look for any entry in that month/year
+            const monthYearPrefix = `${year}-${month.padStart(2, '0')}`;
+            const matchingKey = Object.keys(this.localData).find(key => 
+                key.startsWith(monthYearPrefix)
+            );
+            
+            if (matchingKey) {
+                const hijriData = this.localData[matchingKey];
+                return `${hijriData.hijriMonth.number}/${hijriData.hijriYear}`;
+            }
+            
+            return null;
+        }
+        
+        // We found the first day of the month
+        const hijriData = this.localData[firstDayKey];
+        return `${hijriData.hijriMonth.number}/${hijriData.hijriYear}`;
     }
 
     async getHijriDate(gregDate) {
         // Check successful cache first
         if (this.hijriDateCache.has(gregDate)) {
             return this.hijriDateCache.get(gregDate);
+        }
+        
+        // Check local data source
+        const localHijriDate = this.getDateFromLocalData(gregDate);
+        if (localHijriDate) {
+            // Cache the result
+            this.hijriDateCache.set(gregDate, localHijriDate);
+            this.cacheManager.save([...this.hijriDateCache.entries()]);
+            return localHijriDate;
         }
 
         if (this.failedRequestsCache.has(gregDate)) {
@@ -81,7 +141,7 @@ export class DateConverter {
                     this.requestQueue.unshift(request);
                 } else {
                     // Use moment-hijri as a fallback
-                    const hijriDate = moment(gregDate, 'MM/YYYY').format('iMM/iYYYY');
+                    const hijriDate = moment(request.gregDate, 'MM/YYYY').format('iMM/iYYYY');
                     request.resolve(hijriDate);
                     this.pendingRequests.delete(request.gregDate);
                     // Cache failed request
