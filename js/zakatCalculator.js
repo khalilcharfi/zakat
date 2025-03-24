@@ -26,15 +26,9 @@ export class ZakatCalculator {
 
     async calculateZakat() {
         try {
-            // Initialize hawl tracking state
-            const hawlState = this.initializeHawlState();
-
             // Filter and sort data
             const sortedData = this.prepareMonthlyData();
-
-            if (sortedData.length === 0) {
-                return [];
-            }
+            if (sortedData.length === 0) return [];
 
             // Extract unique dates and year-month combinations
             const uniqueDates = [...new Set(sortedData.map(entry => entry.date))];
@@ -46,24 +40,12 @@ export class ZakatCalculator {
                 this.fetchNisabValues(uniqueYearMonths)
             ]);
 
-            // Process each entry and calculate zakat
-            return this.processEntries(sortedData, hijriDateMap, nisabMap, hawlState);
+            // Calculate zakat with the provided data
+            return this.processEntriesWithHawl(sortedData, hijriDateMap, nisabMap);
         } catch (error) {
             console.error('Error calculating Zakat:', error);
             throw error;
         }
-    }
-
-    initializeHawlState() {
-        return {
-            isActive: false,
-            startHijriDate: null,
-            startDate: null,
-            wealthAtStart: 0,
-            minWealth: Infinity,
-            startHijriMonth: 0,
-            startHijriYear: 0
-        };
     }
 
     prepareMonthlyData() {
@@ -134,45 +116,126 @@ export class ZakatCalculator {
         );
     }
 
-    async processEntries(sortedData, hijriDateMap, nisabMap, hawlState) {
+    processEntriesWithHawl(sortedData, hijriDateMap, nisabMap) {
+        // Initialize results array
         const results = [];
-
-        for (const entry of sortedData) {
+        
+        // Initialize hawl tracking state
+        let hawlState = {
+            isActive: false,
+            startIndex: -1,
+            startDate: null,
+            startHijriDate: null,
+            startHijriMonth: 0,
+            startHijriYear: 0
+        };
+        
+        // Process each entry in chronological order
+        for (let i = 0; i < sortedData.length; i++) {
+            const entry = sortedData[i];
             const [month, year] = entry.date.split('/');
-            const gregorianYear = parseInt(year);
-            const gregorianMonth = parseInt(month);
+            const gregorianYear = parseInt(year, 10);
+            const gregorianMonth = parseInt(month, 10);
             const total = (entry.amount || 0) - (entry.interest || 0);
-
-            // Get nisab value with fallbacks
             const nisab = this.getNisabValue(gregorianYear, gregorianMonth, nisabMap);
-
-            // Get hijri date
-            const hijriDate = hijriDateMap.get(entry.date);
-
-            // Calculate hawl status and zakat
-            const { note, zakat, rowClass } = await this.calculateHawlStatus(
-                total,
-                nisab,
-                hawlState,
-                hijriDate,
-                entry.date,
-                nisabMap
-            );
-
-            results.push({
+            const hijriDate = hijriDateMap.get(entry.date) || "";
+            const [hijriMonth, hijriYear] = hijriDate.split('/').map(part => parseInt(part, 10));
+            
+            // Initialize result object
+            const result = {
                 date: entry.date,
                 hijriDate,
                 amount: entry.amount,
                 interest: entry.interest,
                 total,
                 nisab,
-                zakat: zakat ? this.roundToTwoDecimals(zakat) : null,
-                note,
-                rowClass
-            });
+                zakat: null,
+                note: '',
+                rowClass: ''
+            };
+            
+            if (total < nisab) {
+                // Below nisab threshold - reset hawl if active
+                if (hawlState.isActive) {
+                    hawlState = this.resetHawlState();
+                }
+                
+                result.note = 'below-nisab';
+                result.rowClass = 'below-nisab';
+            } else {
+                // Above nisab threshold
+                if (!hawlState.isActive) {
+                    // Start of new hawl
+                    hawlState = {
+                        isActive: true,
+                        startIndex: i,
+                        startDate: entry.date,
+                        startHijriDate: hijriDate,
+                        startHijriMonth: hijriMonth,
+                        startHijriYear: hijriYear
+                    };
+                    
+                    result.note = 'above-nisab-hawl-begins';
+                    result.rowClass = 'hawl-start';
+                } else {
+                    // Check if a full lunar year has passed since hawl start
+                    const monthsElapsed = this.calculateHijriMonthsElapsed(
+                        hijriYear, hijriMonth,
+                        hawlState.startHijriYear, hawlState.startHijriMonth
+                    );
+                    
+                    if (monthsElapsed >= 12) {
+                        // Full hawl period completed, zakat is due
+                        result.note = 'hawl-complete-zakat-due';
+                        result.rowClass = 'zakat-due';
+                        result.zakat = this.roundToTwoDecimals(total * 0.025); // 2.5% of total
+                        
+                        // Start a new hawl period from this point
+                        hawlState = {
+                            isActive: true,
+                            startIndex: i,
+                            startDate: entry.date,
+                            startHijriDate: hijriDate,
+                            startHijriMonth: hijriMonth,
+                            startHijriYear: hijriYear
+                        };
+                    } else {
+                        // Hawl period still in progress
+                        result.note = 'hawl-continues';
+                        result.rowClass = '';
+                    }
+                }
+            }
+            
+            results.push(result);
         }
-
+        
         return results;
+    }
+
+    resetHawlState() {
+        return {
+            isActive: false,
+            startIndex: -1,
+            startDate: null,
+            startHijriDate: null,
+            startHijriMonth: 0,
+            startHijriYear: 0
+        };
+    }
+
+    calculateHijriMonthsElapsed(currentYear, currentMonth, startYear, startMonth) {
+        // Ensure all inputs are valid numbers
+        currentYear = parseInt(currentYear, 10) || 0;
+        currentMonth = parseInt(currentMonth, 10) || 0;
+        startYear = parseInt(startYear, 10) || 0;
+        startMonth = parseInt(startMonth, 10) || 0;
+        
+        // Calculate months difference
+        const yearDiff = currentYear - startYear;
+        const monthDiff = currentMonth - startMonth;
+        
+        return (yearDiff * 12) + monthDiff;
     }
 
     getNisabValue(year, month, nisabMap) {
@@ -180,101 +243,6 @@ export class ZakatCalculator {
         return nisabMap.get(key) ||
             nisabMap.get(`${year}-1`) || // Try January of same year
             this.nisabService.getNisabValueForYearMonth(year, month);
-    }
-
-    async calculateHawlStatus(total, nisab, hawlState, hijriDate, gregorianDate, nisabMap) {
-        let note = '', zakat = null, rowClass = '';
-
-        if (total >= nisab) {
-            if (!hawlState.isActive) {
-                // Start new hawl period
-                this.startNewHawlPeriod(hawlState, hijriDate, gregorianDate, total);
-                note = 'above-nisab-hawl-begins';
-                rowClass = 'hawl-start';
-            } else {
-                // Update minimum wealth during hawl period
-                hawlState.minWealth = Math.min(hawlState.minWealth, total);
-
-                // Calculate months elapsed in hijri calendar
-                const [currentYear, currentMonth] = hijriDate.split('/').map(Number);
-                const monthsElapsed = this.calculateMonthsElapsed(
-                    currentYear, currentMonth,
-                    hawlState.startHijriYear, hawlState.startHijriMonth
-                );
-
-                if (monthsElapsed >= 12) {
-                    // Hawl period complete - check if zakat is due
-                    const result = this.processCompletedHawl(
-                        hawlState, hijriDate, gregorianDate,
-                        total, nisabMap, currentYear, currentMonth
-                    );
-                    note = result.note;
-                    zakat = result.zakat;
-                    rowClass = result.rowClass;
-                } else {
-                    note = 'hawl-continues';
-                }
-            }
-        } else {
-            // Below nisab - reset hawl
-            this.resetHawlState(hawlState);
-            note = hawlState.isActive ? 'hawl-broken-below-nisab' : 'below-nisab';
-            rowClass = hawlState.isActive ? 'hawl-broken' : 'below-nisab';
-            hawlState.isActive = false;
-        }
-
-        return { note, zakat, rowClass, hawlState };
-    }
-
-    startNewHawlPeriod(hawlState, hijriDate, gregorianDate, total) {
-        hawlState.isActive = true;
-        hawlState.startHijriDate = hijriDate;
-        hawlState.startDate = gregorianDate;
-        hawlState.wealthAtStart = total;
-        hawlState.minWealth = total;
-
-        const [startYear, startMonth] = hijriDate.split('/').map(Number);
-        hawlState.startHijriYear = startYear;
-        hawlState.startHijriMonth = startMonth;
-    }
-
-    calculateMonthsElapsed(currentYear, currentMonth, startYear, startMonth) {
-        const yearDiff = currentYear - startYear;
-        const monthDiff = currentMonth - startMonth;
-        return (yearDiff * 12) + monthDiff;
-    }
-
-    processCompletedHawl(hawlState, hijriDate, gregorianDate, total, nisabMap, currentYear, currentMonth) {
-        const [currentGregMonth, currentGregYear] = gregorianDate.split('/');
-        const zakatYear = new Date(currentGregYear, currentGregMonth - 1).getFullYear();
-        const currentNisab = nisabMap.get(zakatYear) || 0;
-
-        let note, zakat = null, rowClass;
-
-        if (hawlState.minWealth >= currentNisab) {
-            zakat = hawlState.minWealth * 0.025;
-            note = 'hawl-complete-zakat-due';
-            rowClass = 'zakat-due';
-        } else {
-            note = 'hawl-complete-but-below-nisab';
-            rowClass = 'hawl-broken';
-            hawlState.isActive = false;
-        }
-
-        // Reset hawl state for next period
-        this.startNewHawlPeriod(hawlState, hijriDate, gregorianDate, total);
-
-        return { note, zakat, rowClass };
-    }
-
-    resetHawlState(hawlState) {
-        hawlState.isActive = false;
-        hawlState.startHijriDate = null;
-        hawlState.startDate = null;
-        hawlState.wealthAtStart = 0;
-        hawlState.minWealth = Infinity;
-        hawlState.startHijriMonth = 0;
-        hawlState.startHijriYear = 0;
     }
 
     roundToTwoDecimals(value) {
