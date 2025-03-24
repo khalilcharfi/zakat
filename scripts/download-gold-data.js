@@ -15,14 +15,14 @@ if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// Sample data to use as fallback (sorted by date)
-const sampleGoldPriceData = [
-    { date: "2024-01-01", price: "61.17", currency: "€" },
-    { date: "2024-02-01", price: "63.45", currency: "€" },
-    { date: "2024-03-01", price: "64.92", currency: "€" },
-    { date: "2024-04-01", price: "68.53", currency: "€" },
-    { date: "2024-05-01", price: "69.21", currency: "€" }
-];
+// Sample data to use as fallback (with date as key)
+const sampleGoldPriceData = {
+    "2024-01-01": { date: "2024-01-01", price: "61.17", currency: "€" },
+    "2024-02-01": { date: "2024-02-01", price: "63.45", currency: "€" },
+    "2024-03-01": { date: "2024-03-01", price: "64.92", currency: "€" },
+    "2024-04-01": { date: "2024-04-01", price: "68.53", currency: "€" },
+    "2024-05-01": { date: "2024-05-01", price: "69.21", currency: "€" }
+};
 
 // Helper function for waiting
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -32,7 +32,7 @@ async function loadExistingData() {
     try {
         // Initialize existing data
         const result = {
-            existingData: [],
+            existingData: {},
             newestDate: null,
             needsUpdate: true
         };
@@ -49,11 +49,13 @@ async function loadExistingData() {
         }
             
         const data = JSON.parse(fileContent);
-        result.existingData = Array.isArray(data) ? data : (data.data || []);
+        result.existingData = data || {};
         
-        if (result.existingData.length > 0) {
-            // Get the last record (assuming data is sorted by date)
-            const lastRecord = result.existingData[result.existingData.length - 1];
+        if (Object.keys(result.existingData).length > 0) {
+            // Get the last record (assuming we want the most recent date)
+            const dates = Object.keys(result.existingData).sort();
+            const lastDate = dates[dates.length - 1];
+            const lastRecord = result.existingData[lastDate];
             const lastRecordDate = new Date(lastRecord.date);
             result.newestDate = lastRecordDate;
             
@@ -71,7 +73,7 @@ async function loadExistingData() {
     } catch (error) {
         console.error('Error reading existing gold price data:', error);
         console.log('Starting with empty dataset.');
-        return { existingData: [], newestDate: null, needsUpdate: true };
+        return { existingData: {}, newestDate: null, needsUpdate: true };
     }
 }
 
@@ -157,7 +159,7 @@ async function scrapeGoldPriceData() {
         await wait(2000);
 
         // Extract gold price data with optimized evaluation
-        const goldPriceData = await page.evaluate(() => {
+        const goldPriceDataArray = await page.evaluate(() => {
             if (typeof Highcharts === 'undefined' || !Highcharts.charts || !Highcharts.charts.length) {
                 return null;
             }
@@ -174,8 +176,16 @@ async function scrapeGoldPriceData() {
             }));
         });
 
-        // Return the scraped data
-        return goldPriceData && goldPriceData.length > 0 ? goldPriceData : null;
+        // Convert array to object with date as key
+        if (goldPriceDataArray && goldPriceDataArray.length > 0) {
+            const goldPriceData = {};
+            goldPriceDataArray.forEach(item => {
+                goldPriceData[item.date] = item;
+            });
+            return goldPriceData;
+        }
+        
+        return null;
     } catch (error) {
         console.error('Error scraping gold price data:', error);
         return null;
@@ -190,36 +200,29 @@ async function scrapeGoldPriceData() {
 // Function to merge and save data, avoiding duplicates
 function mergeAndSaveData(existingData, newData) {
     try {
-        if (!newData || newData.length === 0) {
+        if (!newData || Object.keys(newData).length === 0) {
             console.log('No new data to add');
-            return { added: 0, total: existingData.length };
+            return { added: 0, total: Object.keys(existingData).length };
         }
-        
-        // Use Set for faster lookups
-        const existingDates = new Set(existingData.map(item => item.date));
         
         // Add new data, avoiding duplicates
         let addedCount = 0;
-        for (const item of newData) {
-            if (!existingDates.has(item.date)) {
-                existingData.push(item);
-                existingDates.add(item.date);
+        for (const [date, item] of Object.entries(newData)) {
+            if (!existingData[date]) {
+                existingData[date] = item;
                 addedCount++;
             }
         }
         
         if (addedCount > 0) {
-            // Sort data by date (ascending) - only if we added new items
-            existingData.sort((a, b) => new Date(a.date) - new Date(b.date));
-            
             // Write merged data back to file
             fs.writeFileSync(goldDataPath, JSON.stringify(existingData, null, 2));
         }
         
-        return { added: addedCount, total: existingData.length };
+        return { added: addedCount, total: Object.keys(existingData).length };
     } catch (error) {
         console.error('Error saving data:', error);
-        return { added: 0, total: existingData.length, error };
+        return { added: 0, total: Object.keys(existingData).length, error };
     }
 }
 
@@ -238,30 +241,36 @@ async function main() {
         const scrapedData = await scrapeGoldPriceData();
         
         // Process the data
-        if (scrapedData && scrapedData.length > 0) {
-            console.log(`Successfully scraped ${scrapedData.length} gold price data points`);
+        if (scrapedData && Object.keys(scrapedData).length > 0) {
+            console.log(`Successfully scraped ${Object.keys(scrapedData).length} gold price data points`);
             
             // Filter to only include new data points (optimization for large datasets)
             let newDataPoints = scrapedData;
             if (newestDate) {
                 const newestDateStr = newestDate.toISOString().split('T')[0];
-                newDataPoints = scrapedData.filter(item => item.date > newestDateStr);
-                console.log(`Found ${newDataPoints.length} new data points since ${newestDateStr}`);
+                newDataPoints = {};
+                Object.entries(scrapedData).forEach(([date, item]) => {
+                    if (date > newestDateStr) {
+                        newDataPoints[date] = item;
+                    }
+                });
+                console.log(`Found ${Object.keys(newDataPoints).length} new data points since ${newestDateStr}`);
             }
             
             // Merge and save data
             const { added, total } = mergeAndSaveData(existingData, newDataPoints);
             console.log(`Added ${added} new data points, total: ${total}`);
             
-            if (added > 0 && newDataPoints.length > 0) {
-                const latest = newDataPoints[newDataPoints.length - 1];
+            if (added > 0 && Object.keys(newDataPoints).length > 0) {
+                const latestDate = Object.keys(newDataPoints).sort().pop();
+                const latest = newDataPoints[latestDate];
                 console.log(`Latest gold price: ${latest.date} - ${latest.price} ${latest.currency}`);
             }
         } else {
             console.log('No data could be scraped, checking fallback options');
             
             // Use fallback data only if we have no existing data
-            if (existingData.length === 0) {
+            if (Object.keys(existingData).length === 0) {
                 console.log('Using fallback sample data');
                 const { added, total } = mergeAndSaveData(existingData, sampleGoldPriceData);
                 console.log(`Added ${added} fallback data points, total: ${total}`);
