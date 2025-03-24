@@ -99,3 +99,23 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 - Gold price data from [GoldAPI.io](https://www.goldapi.io)
 - Hijri date conversion by [Aladhan API](https://aladhan.com)
+
+## Testing
+
+The application includes comprehensive unit tests using Jest:
+
+```
+npm test
+```
+
+To run tests in watch mode during development:
+
+```
+npm run test:watch
+```
+
+To generate a test coverage report:
+
+```
+npm run test:coverage
+```

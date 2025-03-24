@@ -15,23 +15,66 @@
     "watch-and-serve": "rollup -c rollup.config.mjs -w & serve dist",
     "update-version": "node update-version.js",
     "prebuild": "npm run update-version",
-    "download-gold-data": "node scripts/download-gold-data.js"
+    "download-gold-data": "node scripts/download-gold-data.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
   },
   "engines": {
     "node": ">=16.0.0"
   },
+  "jest": {
+    "verbose": true,
+    "testEnvironment": "jsdom",
+    "moduleFileExtensions": [
+      "js",
+      "json"
+    ],
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "js/**/*.js",
+      "!js/vendor/**"
+    ],
+    "coverageReporters": [
+      "text",
+      "html"
+    ]
+  },
   "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.22.15",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "anymatch": "^3.1.3",
+    "babel-jest": "^29.7.0",
     "braces": "^3.0.3",
     "chokidar": "^4.0.3",
     "gh-pages": "^6.3.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "micromatch": "^4.0.8",
     "npm-run-all": "^4.1.5",
     "puppeteer": "^24.4.0",
     "readdirp": "^4.1.2",
     "rollup": "^4.35.0",
     "rollup-plugin-copy": "^3.5.0",
-    "serve": "^14.2.4"
+    "serve": "^14.2.4",
+    "live-server": "^1.2.2"
+  },
+  "keywords": [
+    "zakat",
+    "calculator",
+    "finance",
+    "islamic"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.7"
   }
 }
