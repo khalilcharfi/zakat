@@ -1,7 +1,7 @@
 // Auto-generated file - do not edit manually
 export const appVersion = '1.0.0';
-export const buildTimestamp = '20250324-224312';
-export const buildDate = '2025-03-24 23:43:12';
+export const buildTimestamp = '20250326-085447';
+export const buildDate = '2025-03-26 09:54:47';
 
 export function initVersionInfo() {
     const versionElement = document.getElementById('app-version');
