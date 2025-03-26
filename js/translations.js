@@ -50,14 +50,19 @@ const translations = {
         'faq-what-is-zakat': 'What is Zakat?',
         'faq-what-is-zakat-answer': 'Zakat is a form of alms-giving or charity in Islam, considered a religious obligation or tax, and is one of the Five Pillars of Islam.',
         'faq-how-calculated': 'How is Zakat calculated?',
-        'faq-how-calculated-answer': 'Zakat is calculated as 2.5% of a person’s savings and assets that exceed the Nisab threshold after one full lunar year (Hawl).',
+        'faq-how-calculated-answer': 'Zakat is calculated as 2.5% of a person\'s savings and assets that exceed the Nisab threshold after one full lunar year (Hawl).',
         'faq-data-privacy': 'What is your data privacy policy?',
         'faq-data-privacy-answer': 'We respect your privacy and ensure that your financial data is kept secure and only used for the purpose of Zakat calculation.',
+        'faq-nisab-haul': 'How does my wealth falling below Nisab affect my Haul?',
+        'faq-nisab-haul-answer': 'If at any point your savings fall below the Nisab, your Haul is broken. Your Haul period begins again when your savings account first meets the Nisab threshold. This means you will need to maintain your wealth above the Nisab threshold for a complete lunar year before Zakat becomes obligatory again.',
         // Nisab info translation
         'nisab-info': 'The Nisab is the minimum amount of wealth a Muslim must possess before they are obligated to pay Zakat. It is typically based on the value of 85 grams of gold or its equivalent in other assets.',
         // Total Zakat and Next Due Date translations
         'total-zakat': 'Total Zakat Due',
-        'next-due-date': 'Next Due Date'
+        'next-due-date': 'Next Due Date',
+        // Quranic verse translations
+        'quran-verse': '"Take, [O Muḥammad], from their wealth a charity by which you purify them and cause them increase, and invoke [Allah\'s blessings] upon them. Indeed, your invocations are reassurance for them. And Allah is Hearing and Knowing."',
+        'quran-verse-source': 'Surah At-Tawbah 9:103'
     },
     fr: {
         'filter-zakat-due': 'Afficher uniquement les lignes avec une date d\'échéance ou un zakat éligible',
@@ -110,11 +115,16 @@ const translations = {
         'faq-how-calculated-answer': 'La Zakat est calculée à 2,5 % des économies et des biens d\'une personne qui dépassent le seuil du Nisab après une année lunaire complète (Hawl).',
         'faq-data-privacy': 'Quelle est votre politique de confidentialité des données ?',
         'faq-data-privacy-answer': 'Nous respectons votre vie privée et nous assurons que vos données financières sont sécurisées et utilisées uniquement dans le but du calcul de la Zakat.',
+        'faq-nisab-haul': 'Comment ma richesse tombant en dessous du Nisab affecte-t-elle mon Hawl ?',
+        'faq-nisab-haul-answer': 'Si à un moment donné vos économies tombent en dessous du Nisab, votre période de Hawl est interrompue. Votre période de Hawl recommence lorsque votre compte d\'épargne atteint à nouveau le seuil du Nisab. Cela signifie que vous devrez maintenir votre richesse au-dessus du seuil du Nisab pendant une année lunaire complète avant que la Zakat ne devienne à nouveau obligatoire.',
         // Nisab info translation
         'nisab-info': 'Le Nisab est le montant minimum de richesse qu\'un musulman doit posséder avant d\'être obligé de payer la Zakat. Il est généralement basé sur la valeur de 85 grammes d\'or ou son équivalent en d\'autres actifs.',
         // Total Zakat and Next Due Date translations
         'total-zakat': 'Zakat Totale Due',
-        'next-due-date': 'Prochaine Date d\'Échéance'
+        'next-due-date': 'Prochaine Date d\'Échéance',
+        // Quranic verse translations
+        'quran-verse': '"Prélève de leurs biens une aumône par laquelle tu les purifies et les bénis, et prie pour eux. Ta prière est une quiétude pour eux. Et Allah est Audient et Omniscient."',
+        'quran-verse-source': 'Sourate At-Tawbah 9:103 (Traduction de Muhammad Hamidullah)'
     },
     ar: {
         "filter-zakat-due": "عرض الصفوف التي تحتوي على تاريخ استحقاق أو زكاة مستحقة فقط",
@@ -157,6 +167,8 @@ const translations = {
         "faq-how-calculated-answer": "يتم حساب الزكاة بنسبة 2.5% من المدخرات والأصول التي تجاوزت النصاب بعد مرور سنة قمرية كاملة.",
         "faq-data-privacy": "ما هي سياسة خصوصية البيانات الخاصة بكم؟",
         "faq-data-privacy-answer": "نحن نحترم خصوصية بياناتك المالية ونستخدمها فقط لحساب الزكاة دون مشاركتها مع أي جهة أخرى.",
+        "faq-nisab-haul": "كيف يؤثر انخفاض ثروتي عن النصاب على الحول؟",
+        "faq-nisab-haul-answer": "إذا انخفضت مدخراتك في أي وقت عن النصاب، فإن الحول ينكسر. وتبدأ فترة الحول من جديد عندما تصل مدخراتك إلى حد النصاب مرة أخرى. وهذا يعني أنك بحاجة للحفاظ على ثروتك فوق حد النصاب لمدة سنة قمرية كاملة قبل أن تصبح الزكاة واجبة عليك مرة أخرى.",
 
         // معلومات حول النصاب
         "nisab-info": "النصاب هو الحد الأدنى للثروة التي يجب أن يمتلكها المسلم ليصبح ملزماً بإخراج الزكاة. يُحسب عادةً بناءً على قيمة 85 جرامًا من الذهب أو ما يعادلها من الأصول.",
@@ -164,6 +176,10 @@ const translations = {
         // حساب إجمالي الزكاة وتاريخ الاستحقاق
         "total-zakat": "إجمالي الزكاة المستحقة",
         "next-due-date": "تاريخ استحقاق الزكاة التالي",
+
+        // آية قرآنية
+        "quran-verse": "﴿خُذْ مِنْ أَمْوَالِهِمْ صَدَقَةً تُطَهِّرُهُمْ وَتُزَكِّيهِم بِهَا وَصَلِّ عَلَيْهِمْ ۖ إِنَّ صَلَاتَكَ سَكَنٌ لَّهُمْ ۗ وَاللَّهُ سَمِيعٌ عَلِيمٌ﴾",
+        "quran-verse-source": "سورة التوبة ٩:١٠٣ (القرآن الكريم)",
 
         // رفع وتحليل ملفات البيانات المالية
         "excel-upload-info": "يمكنك أيضًا رفع ملفات Excel (.xlsx, .xls) مع أعمدة: التاريخ، المبلغ، والفائدة.",
