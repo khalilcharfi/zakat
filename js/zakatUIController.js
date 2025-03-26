@@ -59,7 +59,7 @@ const DOM_IDS = {
 };
 
 export class ZakatUIController {
-    constructor(options = {}) {
+    constructor(preloadedLanguageManager = null, options = {}) {
         // Merge provided options with defaults
         this.options = {
             ...{
@@ -73,8 +73,8 @@ export class ZakatUIController {
             ...options
         };
 
-        // Initialize services and dependencies
-        this.languageManager = new LanguageManager();
+        // Use preloaded language manager if provided, otherwise create a new one
+        this.languageManager = preloadedLanguageManager || new LanguageManager();
         this.dateConverter = new DateConverter();
         this.nisabService = new NisabService();
         this.calculator = new ZakatCalculator(this.languageManager, this.dateConverter, this.nisabService);
@@ -165,12 +165,14 @@ export class ZakatUIController {
             });
         }
 
-        // Set initial language based on browser preference
-        const browserLang = navigator.language.split('-')[0];
-        const initialLang = this.options.supportedLanguages.includes(browserLang)
-            ? browserLang
-            : this.options.defaultLanguage;
-        this.languageManager.changeLanguage(initialLang);
+        // Get saved language from localStorage or default to English
+        const savedLanguage = localStorage.getItem('language') || 'en';
+        
+        // Update the language dropdown to show the correct selected language
+        this.updateLanguageDropdownText(savedLanguage);
+        
+        // Always use English as the default language
+        this.languageManager.changeLanguage(savedLanguage);
 
         // Load gold price data
         await this.nisabService.loadGoldPriceData();
@@ -477,79 +479,75 @@ export class ZakatUIController {
         };
     }
 
-
-// Add this method before or after setupLanguageDropdownListener
-setupLanguageSelectListener() {
-    // This method would handle a traditional select element if you have one
-    // Since you're using a custom dropdown, this might not be needed
-    const languageSelect = document.getElementById('languageSelect');
-    if (languageSelect) {
-        languageSelect.addEventListener('change', (e) => {
-            const selectedLang = e.target.value;
-            if (selectedLang) {
-                this.changeLanguage(selectedLang);
-            }
-        });
+    setupLanguageSelectListener() {
+        // This method would handle a traditional select element if you have one
+        // Since you're using a custom dropdown, this might not be needed
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+            languageSelect.addEventListener('change', (e) => {
+                const selectedLang = e.target.value;
+                if (selectedLang) {
+                    this.changeLanguage(selectedLang);
+                }
+            });
+        }
     }
-}
 
-setupEventListeners() {
-    this.setupLanguageSelectListener();
-    this.setupLanguageDropdownListener();
-    this.setupFileInputListener();
-    this.setupFilterToggleListener();
-    this.setupDownloadLinksListeners();
-    this.setupRowFormListeners();
-    this.setupAccordionHeadersListener();
-}
+    setupEventListeners() {
+        this.setupLanguageSelectListener();
+        this.setupLanguageDropdownListener();
+        this.setupFileInputListener();
+        this.setupFilterToggleListener();
+        this.setupDownloadLinksListeners();
+        this.setupRowFormListeners();
+        this.setupAccordionHeadersListener();
+    }
 
-// Add this method to the ZakatUIController class
+    setupLanguageDropdownListener() {
+        const languageButton = document.querySelector('.language-button');
+        const languageOptions = document.querySelector('.language-options');
 
-setupLanguageDropdownListener() {
-    const languageButton = document.querySelector('.language-button');
-    const languageOptions = document.querySelector('.language-options');
+        if (languageButton && languageOptions) {
+            // Toggle language options when button is clicked
+            languageButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                languageOptions.classList.toggle('show');
+                // Update aria-expanded attribute for accessibility
+                const expanded = languageOptions.classList.contains('show');
+                languageButton.setAttribute('aria-expanded', expanded);
+            });
 
-    if (languageButton && languageOptions) {
-        // Toggle language options when button is clicked
-        languageButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            languageOptions.classList.toggle('show');
-            // Update aria-expanded attribute for accessibility
-            const expanded = languageOptions.classList.contains('show');
-            languageButton.setAttribute('aria-expanded', expanded);
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!languageButton.contains(e.target) && !languageOptions.contains(e.target)) {
-                languageOptions.classList.remove('show');
-                languageButton.setAttribute('aria-expanded', 'false');
-            }
-        });
-
-        // Handle language selection
-        const languageOptionButtons = languageOptions.querySelectorAll('button');
-        languageOptionButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                const lang = e.target.getAttribute('data-lang');
-                if (lang) {
-                    this.changeLanguage(lang);
-
-                    // Update button text to show selected language
-                    const langText = e.target.textContent;
-                    const selectedLanguage = languageButton.querySelector('.selected-language');
-                    if (selectedLanguage) {
-                        selectedLanguage.textContent = langText;
-                    }
-
-                    // Hide dropdown after selection
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!languageButton.contains(e.target) && !languageOptions.contains(e.target)) {
                     languageOptions.classList.remove('show');
                     languageButton.setAttribute('aria-expanded', 'false');
                 }
             });
-        });
+
+            // Handle language selection
+            const languageOptionButtons = languageOptions.querySelectorAll('button');
+            languageOptionButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const lang = e.target.getAttribute('data-lang');
+                    if (lang) {
+                        this.changeLanguage(lang);
+
+                        // Update button text to show selected language
+                        const langText = e.target.textContent;
+                        const selectedLanguage = languageButton.querySelector('.selected-language');
+                        if (selectedLanguage) {
+                            selectedLanguage.textContent = langText;
+                        }
+
+                        // Hide dropdown after selection
+                        languageOptions.classList.remove('show');
+                        languageButton.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+        }
     }
-}
 
     setupFileInputListener() {
         this.domElements.fileInput?.addEventListener('click', (e) => {
@@ -636,11 +634,18 @@ setupLanguageDropdownListener() {
     }
 
     changeLanguage(lang) {
+        // Save selected language to localStorage for persistence between page reloads
+        localStorage.setItem('language', lang);
+        
+        // Update language manager
         this.languageManager.changeLanguage(lang);
+        
+        // Update UI if we have data
         if (this.zakatData.length > 0) {
             this.updateUI();
         }
 
+        // Set document direction based on language
         if (lang === 'ar') {
             document.documentElement.dir = 'rtl';
             document.body.dir = 'rtl';
@@ -648,6 +653,9 @@ setupLanguageDropdownListener() {
             document.documentElement.dir = 'ltr';
             document.body.dir = 'ltr';
         }
+        
+        // Update the language dropdown text
+        this.updateLanguageDropdownText(lang);
     }
 
     // Add validation method
@@ -1017,51 +1025,6 @@ setupLanguageDropdownListener() {
             });
         }
     }
-
-        // ... existing code ...
-
-        downloadJsonLink() {
-            // Only proceed if we have data
-            if (!this.zakatData || this.zakatData.length === 0) {
-                alert(this.languageManager.translate('no-data-to-download') || 'No data available to download');
-                return;
-            }
-
-            // Create data structure with current data
-            const currentData = {
-                monthlyData: this.calculator.getMonthlyData(),
-                nisabData: this.nisabService.getNisabData().data,
-                // Include API key if available
-                goldApiKey: this.nisabService.getApiKey() || null
-            };
-
-            // Convert to JSON string with pretty formatting
-            const jsonString = JSON.stringify(currentData, null, 2);
-
-            // Create a blob and download link
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-
-            // Generate filename with date
-            const now = new Date();
-            const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
-            const filename = `zakat_data_${dateStr}.json`;
-
-            // Create temporary link and trigger download
-            const tempLink = document.createElement('a');
-            tempLink.href = url;
-            tempLink.download = filename;
-            document.body.appendChild(tempLink);
-            tempLink.click();
-
-            // Clean up
-            document.body.removeChild(tempLink);
-            setTimeout(() => {
-                URL.revokeObjectURL(url);
-            }, 100);
-        }
-
-        // ... existing code ...
 
     showLoadingState() {
         const loadingHTML = `<div class="loading">${this.languageManager.translate('loading')}</div>`;
@@ -1458,5 +1421,37 @@ setupLanguageDropdownListener() {
 
         // Generate Excel file and trigger download
         XLSX.writeFile(wb, "zakat_example_template.xlsx");
+    }
+
+    // Add method to update the language dropdown text based on the selected language
+    updateLanguageDropdownText(selectedLanguage) {
+        // Update the language dropdown button text
+        const languageButton = document.querySelector('.language-button');
+        const selectedLanguageElement = languageButton?.querySelector('.selected-language');
+        
+        if (selectedLanguageElement) {
+            // Find the corresponding button in language options to get the display text
+            const languageOption = document.querySelector(`.language-options button[data-lang="${selectedLanguage}"]`);
+            if (languageOption) {
+                selectedLanguageElement.textContent = languageOption.textContent;
+            } else {
+                // Fallback display text if button not found
+                const languageDisplayNames = {
+                    'en': '🇬🇧 English',
+                    'fr': '🇫🇷 Français',
+                    'ar': '🇸🇦 العربية'
+                };
+                selectedLanguageElement.textContent = languageDisplayNames[selectedLanguage] || '🇬🇧 English';
+            }
+        }
+        
+        // Also update the traditional select element if it exists
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+            const option = languageSelect.querySelector(`option[value="${selectedLanguage}"]`);
+            if (option) {
+                option.selected = true;
+            }
+        }
     }
 }

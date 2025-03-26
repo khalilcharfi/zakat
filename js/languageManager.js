@@ -181,7 +181,42 @@ export class LanguageManager {
 
     // Helper method to preload translations for common keys
     preloadCommonTranslations() {
-        const commonKeys = ['loading', 'error', 'submit', 'cancel', 'next', 'previous'];
-        commonKeys.forEach(key => this.translate(key));
+        // Preload all critical UI elements that need to be displayed immediately
+        const commonKeys = [
+            // Navigation and core UI elements
+            'loading', 'error', 'submit', 'cancel', 'save', 
+            'next', 'previous', 'zakat-calculation-title',
+            'upload-section-title', 'browse-files', 'drag-drop-text',
+            'or-browse-text', 'accepted-formats',
+            
+            // Table headers and important labels
+            'date', 'amount', 'interest', 'total', 'nisab', 
+            'zakat', 'notes', 'year', 'nisab-eur',
+            
+            // Status messages
+            'above-nisab-hawl-begins', 'hawl-continues', 
+            'hawl-complete-zakat-due', 'below-nisab',
+            
+            // Form and button labels
+            'add-new-entry', 'save', 'cancel',
+            
+            // Language selector
+            'select-language'
+        ];
+        
+        // Preload translations for all supported languages
+        const languages = ['en', 'fr', 'ar'];
+        const currentLang = this.currentLanguage;
+        
+        languages.forEach(lang => {
+            // Temporarily set language to preload translations
+            this.currentLanguage = lang;
+            
+            // Preload all common keys
+            commonKeys.forEach(key => this.translate(key));
+        });
+        
+        // Restore original language
+        this.currentLanguage = currentLang;
     }
 }

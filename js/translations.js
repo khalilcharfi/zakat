@@ -38,6 +38,8 @@ const translations = {
         'showing_entries': 'Showing _START_ to _END_ of _TOTAL_ records',
         'showing_0_entries': 'Showing 0 to 0 of 0 records',
         "download-excel-template": 'Download Excel Template',
+        "download-csv-template": 'Download CSV Template',
+        "download-json": 'Download JSON Example',
         'excel-upload-info': 'You can also upload Excel files (.xlsx, .xls) with columns: Date, Amount, and Interest',
         'excel-parsing-error': 'Error parsing Excel file. Please check the format.',
         "download-error": "Error downloading example file. Please try again.",
@@ -103,6 +105,8 @@ const translations = {
         'cancel': 'Annuler',
         "download-error": "Erreur lors du téléchargement du fichier d'exemple. Veuillez réessayer.",
         "download-excel-template": "Télécharger le modèle Excel",
+        "download-csv-template": "Télécharger le modèle CSV",
+        "download-json": "Télécharger l'exemple JSON",
         "excel-upload-info": "Vous pouvez également télécharger des fichiers Excel (.xlsx, .xls) avec les colonnes : Date, Montant et Intérêt",
         "excel-parsing-error": "Erreur lors de l'analyse du fichier Excel. Veuillez vérifier le format.",
         "showing_entries": "Affichage de _START_ à _END_ sur _TOTAL_ enregistrements",
@@ -212,7 +216,7 @@ const translations = {
         "download-excel-template": "تحميل نموذج Excel",
         "download-pdf-template": "تحميل نموذج PDF",
         "download-json": "تحميل ملف JSON",
-         "browse-files": "تصفح الملفات"
+        "browse-files": "تصفح الملفات"
     }
 };
 
